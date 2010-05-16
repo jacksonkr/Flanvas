@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - Loader</title>
+
+<!-- 
+<script src="/js/jquery/jquery-1.4.2.min.js" type="text/javascript"></script> 
+-->
+<script src="flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	_f.trace_div = "trace";
+	//_f.clear_trace_on_frame = false;
+	_f.trace_draw = true;
+	stage.setCanvas(document.getElementById('myCanvas'));
+	stage.fps = 24;
+	
+	// draggable image
+	var imgContain = new Sprite();
+	stage.addChild(imgContain);
+	
+	var img = new Loader();
+	img.contentLoaderInfo.addEventListener(Event.COMPLETE, function(event) {
+		imgContain.addChild(img);
+		imgContain.alpha = 0.5;
+		
+		img.addEventListener(Event.ENTER_FRAME, function(event) {
+			//
+		});
+	});
+	var clickProps;
+	function contMouseDownHandler(event) {
+		clickProps = {'x':event.currentTarget.x,'y':event.currentTarget.y,'mouseX':stage.mouseX(),'mouseY':stage.mouseY()};
+		stage.addEventListener(MouseEvent.MOUSE_MOVE, contMouseMoveHandler);
+		stage.addEventListener(MouseEvent.MOUSE_UP, contMouseUpHandler);
+	}
+	function contMouseMoveHandler(event) {
+		trace(stage.mouseX())
+		imgContain.x = clickProps.x + (stage.mouseX() - clickProps.mouseX);
+		imgContain.y = clickProps.y + (stage.mouseY() - clickProps.mouseY);
+	}
+	function contMouseUpHandler(event) {
+		stage.removeEventListener(MouseEvent.MOUSE_MOVE, contMouseMoveHandler);
+		stage.removeEventListener(MouseEvent.MOUSE_UP, contMouseUpHandler);
+	}
+	
+	imgContain.addEventListener(MouseEvent.MOUSE_DOWN, contMouseDownHandler);
+	img.load(new URLRequest("http://jacksonkr.com/images/math.gif"));
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

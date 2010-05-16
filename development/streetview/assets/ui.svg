@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+]>
+<svg instance-name="ui" version="1.1"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 x="0px" y="0px" width="800px" height="600px" viewBox="-48.5 -49 800 600"
+	 overflow="visible" enable-background="new -48.5 -49 800 600" xml:space="preserve">
+<defs>
+</defs>
+<circle instance-name="ui.wheel" opacity="0.5" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" cx="38.654" cy="42.154" r="37.154"/>
+<circle instance-name="ui.wheel." opacity="0.2" fill="#FFFFFF" cx="38.654" cy="42.154" r="37.154"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="69.461" cy="40.111" r="1.105"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="69.461" cy="44.111" r="1.105"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="8.461" cy="40.111" r="1.105"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="8.461" cy="44.111" r="1.105"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="36.461" cy="12.111" r="1.105"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="40.461" cy="12.111" r="1.105"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="36.461" cy="72.111" r="1.105"/>
+<circle instance-name="ui.wheel." opacity="0.4" fill="#FFFFFF" cx="40.461" cy="72.111" r="1.105"/>
+<path fill="#FFFFFF" d="M56.291,24.382c-4.537-4.52-10.794-7.314-17.705-7.314s-13.167,2.795-17.705,7.314l17.705,17.705
+	L56.291,24.382z"/>
+<path fill="#FFFFFF" d="M56.291,24.382L38.586,42.086l17.772,17.772c4.52-4.537,7.314-10.794,7.314-17.705
+	C63.673,35.209,60.851,28.924,56.291,24.382z"/>
+<path fill="#FFFFFF" d="M20.814,59.858c4.542,4.56,10.827,7.382,17.772,7.382s13.229-2.822,17.772-7.382L38.586,42.086
+	L20.814,59.858z"/>
+<path fill="#FFFFFF" d="M20.882,24.382c-4.56,4.542-7.382,10.827-7.382,17.772c0,6.91,2.795,13.167,7.314,17.705l17.772-17.772
+	L20.882,24.382z"/>
+<polyline fill="none" stroke="#6D81C6" stroke-width="3" stroke-miterlimit="10" points="33.579,28.06 38.587,23.248 43.594,28.06 
+	"/>
+<polyline fill="none" stroke="#6D81C6" stroke-width="3" stroke-miterlimit="10" points="43.594,56.248 38.586,61.06 33.579,56.248 
+	"/>
+<polyline fill="none" stroke="#6D81C6" stroke-width="3" stroke-miterlimit="10" points="52.681,37.146 57.492,42.154 
+	52.681,47.161 "/>
+<polyline fill="none" stroke="#6D81C6" stroke-width="3" stroke-miterlimit="10" points="24.492,47.161 19.681,42.153 
+	24.492,37.146 "/>
+<path fill="none" stroke="#6D81C6" stroke-linejoin="round" stroke-miterlimit="10" d="M36.042,46.628c0,0-5.146-4.771-3.979-6
+	s3.188,0.833,3.188,0.833s-2.158-3.735-0.991-4.568s2.824,2.839,2.824,2.839s-0.868-4.228,0.778-4.208s1.347,4.249,1.347,4.249
+	s0.333-3.771,1.87-3.189c1.724,0.653-0.1,4.002-0.1,4.002s1.542-2.777,2.854-1.735c1.304,1.036-2.792,7.776-2.792,7.776"/>
+<path fill="#FFFFFF" d="M43.5,8.068C43.5,9.135,42.635,10,41.568,10h-7.136C33.365,10,32.5,9.135,32.5,8.068V1.932
+	C32.5,0.865,33.365,0,34.432,0h7.136C42.635,0,43.5,0.865,43.5,1.932V8.068z"/>
+<path d="M35.161,8.579V1.421h1.406l2.929,4.78v-4.78h1.344v7.158h-1.451l-2.885-4.668v4.668H35.161z"/>
+<path fill="#FFFFFF" stroke="#B3B3B3" stroke-miterlimit="10" d="M47,102.5c0-4.971-4.029-9-9-9s-9,4.029-9,9v11h18V102.5z"/>
+<path fill="#FFFFFF" stroke="#B3B3B3" stroke-miterlimit="10" d="M29,113.5v12c0,4.971,4.029,9,9,9s9-4.029,9-9v-12H29z"/>
+<path fill="#6D81C6" d="M37.448,107.517v-2.988h-2.96v-1.586h2.96v-2.96h1.604v2.96h2.96v1.586h-2.96v2.988H37.448z"/>
+<path fill="#6D81C6" d="M35.597,123.767v-1.533h5.806v1.533H35.597z"/>
+</svg>
