@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ColorTransform.color</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	_f.traceDiv = document.getElementById("trace");
+	stage.canvas = document.getElementById('myCanvas');
+	
+	function colorTo(val) {
+		if(val) {
+			var c = box.transform.colorTransform;
+			c.color = val;
+			box.transform.colorTransform = c;
+		}
+	}
+	
+	var box = new Sprite();
+	//box.graphics.fillStyle('rbg(0, 0, 0)');
+	box.graphics.fillStyle(0x009900);
+	box.graphics.drawRect(0, 0, 400, 300);
+	box.graphics.fill();
+	stage.addChild(box);
+	
+	var tf = new com.flanvas.text.TextField();
+	tf.text = "Mouse over this box to see how color transforms work in flanvas.";
+	tf.y = 50.0;
+	tf.x = 200;
+	tf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
+	box.addChild(tf);
+	
+	box.addEventListener(MouseEvent.ROLL_OUT, function(event) {
+		colorTo(null);
+	});
+	box.addEventListener(MouseEvent.MOUSE_MOVE, function(event) {
+		var h = Math.round(0xffffff / box.width * box.mouseX).toString(16);
+		while(h.length < 6) {
+			h = "0" + h;
+		}
+		colorTo("#" + h);
+	});
+	
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

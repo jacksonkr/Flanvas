@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - Loader</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	_f.traceDiv = document.getElementById("trace");
+	//_f.clearTraceOnFrame = false;
+	//_f.traceDraw = true;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+	
+	
+	
+	var img = new Loader();
+	img.contentLoaderInfo.addEventListener(Event.COMPLETE, function(event) {
+		stage.addChild(img);
+		img.scaleX = 0.5;
+		img.scaleY = 2.0;
+	});
+	img.load(new URLRequest("http://flanvas.com/images/logo.gif"));
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

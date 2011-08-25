@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Flanvas - Dragging</title>
+
+<style type="text/css">
+/*	canvas { -webkit-transform: scale3d(2, 2, 0) translate3d(200px, 110px, 0); }*/
+	canvas {
+		-webkit-touch-callout: none ;
+		-webkit-user-select: none ;
+	}
+</style>
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script>
+
+
+window.onload = function() {
+	setTimeout( function(){ window.scrollTo( 0, 0 ); }, 50 );
+
+	_f.traceDiv = document.getElementById("trace");
+	//_f.clearTraceOnFrame = false;
+	// _f.traceDraw = false;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+	
+	// document.ontouchmove = function(e){ e.preventDefault(); }	
+
+	var circ = new Sprite();
+	circ.graphics.beginFill(0x0000ff);
+	circ.graphics.drawCircle(0, 0, 40);
+	circ.graphics.endFill();
+	circ.x = 100;
+	circ.y = 100;
+	
+	stage.addChild(circ);
+	
+	var clickProps;
+	function contMouseDownHandler(event) {
+		clickProps = {'x':event.currentTarget.x,'y':event.currentTarget.y,'mouseX':stage.mouseX,'mouseY':stage.mouseY};
+		stage.addEventListener(MouseEvent.MOUSE_MOVE, contMouseMoveHandler);
+		stage.addEventListener(MouseEvent.MOUSE_UP, contMouseUpHandler);
+	}
+	function contMouseMoveHandler(event) {
+		circ.x = clickProps.x + (stage.mouseX - clickProps.mouseX);
+		circ.y = clickProps.y + (stage.mouseY - clickProps.mouseY);
+	}
+	function contMouseUpHandler(event) {
+		stage.removeEventListener(MouseEvent.MOUSE_MOVE, contMouseMoveHandler);
+		stage.removeEventListener(MouseEvent.MOUSE_UP, contMouseUpHandler);
+	}
+	
+	circ.addEventListener(MouseEvent.MOUSE_DOWN, contMouseDownHandler);
+}
+</script>
+</head>
+
+<body>
+
+<canvas id="myCanvas" width="200" height="200"></canvas>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>DisplayObject.localToGlobal</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	_f.traceDiv = document.getElementById("trace");
+	//_f.clearTraceOnFrame = false;
+	//_f.traceDraw = true;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+	
+	var box1 = new Sprite();
+	box1.graphics.beginFill(0x009900);
+	box1.graphics.drawRect(0, 0, 50, 50);
+	box1.graphics.endFill();
+	box1.x = 10;
+	box1.y = 10;
+	stage.addChild(box1);
+	
+	var box2 = new Sprite();
+	box2.graphics.beginFill(0x990000);
+	box2.graphics.drawRect(0, 0, 50, 50);
+	box2.graphics.endFill();
+	box2.x = 10;
+	box2.y = 10;
+	box1.addChild(box2);
+	
+	var box3 = new Sprite();
+	box3.graphics.beginFill(0x000099);
+	box3.graphics.drawRect(0, 0, 50, 50);
+	box3.graphics.endFill();
+	box3.x = 10;
+	box3.y = 10;
+	box2.addChild(box3);
+	
+	var pt = box3.localToGlobal(new Point(0,0));
+	// should put out 30, 30
+	alert(pt.x + ", " + pt.y);
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

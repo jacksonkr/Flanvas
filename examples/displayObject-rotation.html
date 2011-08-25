@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - Draw Box</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	//_f.traceDiv = document.getElementById("trace");
+	//_f.clear_trace_on_frame = false;
+	//_f.trace_draw = true;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+	
+	var box1 = new Sprite();
+	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
+	box1.graphics.beginFill(0x990000, 0.5);
+	box1.graphics.drawRect(0, 0, 100, 100);
+	box1.graphics.fill();
+	box1.x = 50;
+	box1.y = 50;
+	stage.addChild(box1);
+	
+	var box2 = new Sprite();
+	box2.graphics.beginFill(0x000099, 1.0);
+	box2.graphics.drawRect(0, 0, 50, 50);
+	box2.graphics.endFill();
+	box2.x = 25.0;
+	box2.y = 25.0;
+	box1.addChild(box2);
+	
+	var box3 = new Sprite();
+	box3.graphics.beginFill(0x990000);
+	box3.graphics.drawRect(0, 0, 25, 25);
+	box3.graphics.endFill();
+	box3.x = 12.5;
+	box3.y = 12.5;
+	box2.addChild(box3);
+	
+	box1.addEventListener(Event.ENTER_FRAME, function(event) {
+		event.target.rotation += 1;
+		//trace("b1: " + event.target.absRotation);
+	});
+	box2.addEventListener(Event.ENTER_FRAME, function(event) {
+		event.target.rotation -= 1;
+		//trace("b2: " + event.target.absRotation);
+	});
+	box3.addEventListener(Event.ENTER_FRAME, function(event) {
+		event.target.rotation += 1;
+		//trace("b3: " + event.target.absRotation);
+	});
+	
+	var circ1 = new Sprite();
+	circ1.graphics.beginFill(0x009900);
+	circ1.graphics.drawCircle(0, 0, 25);
+	circ1.graphics.endFill();
+	circ1.x = 250;
+	circ1.y = 100;
+	circ1.scaleY = 1;
+	stage.addChild(circ1);
+	
+	var circ2 = new Sprite();
+	circ2.graphics.beginFill(0x000099);
+	circ2.graphics.drawCircle(0, 0, 10);
+	circ2.graphics.endFill();
+	circ2.x = 60;
+	circ2.y = 0;
+	circ1.addChild(circ2);
+	
+	var circ3 = new Sprite();
+	circ3.graphics.beginFill(0x990000);
+	circ3.graphics.drawCircle(0, 0, 2.5);
+	circ3.graphics.endFill();
+	circ3.x = 15;
+	circ3.y = 0;
+	circ2.addChild(circ3);
+	
+	circ1.addEventListener(Event.ENTER_FRAME, function(event) {
+		event.target.rotation += 1;
+		//trace("c1: " + event.target.absRotation);
+	});
+	circ2.addEventListener(Event.ENTER_FRAME, function(event) {
+		event.target.rotation += 1;
+		//trace("c2: " + event.target.absRotation);
+	});
+	circ3.addEventListener(Event.ENTER_FRAME, function(event) {
+		//event.target.rotation += 1;
+		//trace("c3: " + event.target.absRotation);
+	});
+	
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

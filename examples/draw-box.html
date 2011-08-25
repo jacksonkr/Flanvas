@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - Draw colorsGroup</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+var PAD = 30.0;
+var SIZE = 50.0;
+
+window.onload = function() {
+	//_f.traceDraw = true;
+	stage.canvas = document.getElementById('myCanvas');
+	
+	/**
+	 * Note that some color formats have alpha included
+	 * into the color. Formats that includ the alpha
+	 * are the best formats to use when avaialable.
+	 *
+	 * To accomplish alpha effects with non-alpha formats
+	 * you can set the DisplayObject to have a alpha of
+	 * 0.5 eg colorsGroup2.alpha = 0.5;
+	 */
+	
+	
+	//using rgba eg. 'rgba(R, G, B, A)';
+	
+	var colorsGroup1 = new Sprite();
+	colorsGroup1.graphics.fillStyle('rgba(255, 0, 0, 0.5)');
+	colorsGroup1.graphics.drawRect(PAD, PAD, SIZE, SIZE);
+	colorsGroup1.graphics.fill();
+	
+	colorsGroup1.graphics.fillStyle('rgba(0, 255, 0, 0.5)');
+	colorsGroup1.graphics.drawRect(PAD * 3, PAD, SIZE, SIZE);
+	colorsGroup1.graphics.fill();
+	
+	colorsGroup1.graphics.fillStyle('rgba(0, 0, 255, 0.5)');
+	colorsGroup1.graphics.drawRect(PAD * 5, PAD, SIZE, SIZE);
+	colorsGroup1.graphics.fill();
+	stage.addChild(colorsGroup1);
+	
+	// using rgb eg. 'rgb(R, G, B)'
+	
+	var colorsGroup2 = new Sprite();
+	colorsGroup2.graphics.fillStyle('rgb(255, 0, 0)');
+	colorsGroup2.graphics.drawRect(PAD, PAD * 5, SIZE, SIZE);
+	colorsGroup2.graphics.fill();
+	
+	colorsGroup2.graphics.fillStyle('rgb(0, 255, 0)');
+	colorsGroup2.graphics.drawRect(PAD * 3, PAD * 5, SIZE, SIZE);
+	colorsGroup2.graphics.fill();
+	
+	colorsGroup2.graphics.fillStyle('rgb(0, 0, 255)');
+	colorsGroup2.graphics.drawRect(PAD * 5, PAD * 5, SIZE, SIZE);
+	colorsGroup2.graphics.fill();
+	stage.addChild(colorsGroup2);
+	
+	// using 6 digit hex eg. 0xRRGGBB
+	
+	var colorsGroup3 = new Sprite();
+	colorsGroup3.graphics.fillStyle(0xff0000);
+	colorsGroup3.graphics.drawRect(PAD, PAD * 3, SIZE, SIZE);
+	colorsGroup3.graphics.fill();
+	
+	colorsGroup3.graphics.fillStyle(0x00ff00);
+	colorsGroup3.graphics.drawRect(PAD * 3, PAD * 3, SIZE, SIZE);
+	colorsGroup3.graphics.fill();
+	
+	colorsGroup3.graphics.fillStyle(0x0000ff);
+	colorsGroup3.graphics.drawRect(PAD * 5, PAD * 3, SIZE, SIZE);
+	colorsGroup3.graphics.fill();
+	stage.addChild(colorsGroup3);
+	
+	// using regular string eg 'red'
+	
+	var colorsGroup4 = new Sprite();
+	colorsGroup4.graphics.fillStyle('red');
+	colorsGroup4.graphics.drawRect(PAD, PAD * 7, SIZE, SIZE);
+	colorsGroup4.graphics.fill();
+	
+	colorsGroup4.graphics.fillStyle('green');
+	colorsGroup4.graphics.drawRect(PAD * 3, PAD * 7, SIZE, SIZE);
+	colorsGroup4.graphics.fill();
+	
+	colorsGroup4.graphics.fillStyle('blue');
+	colorsGroup4.graphics.drawRect(PAD * 5, PAD * 7, SIZE, SIZE);
+	colorsGroup4.graphics.fill();
+	stage.addChild(colorsGroup4);
+	
+	// using 6 digit hex string eg. '#RRGGBB'
+	
+	var colorsGroup5 = new Sprite();
+	colorsGroup5.graphics.fillStyle('#FF0000');
+	colorsGroup5.graphics.drawRect(PAD, PAD * 9, SIZE, SIZE);
+	colorsGroup5.graphics.fill();
+	
+	colorsGroup5.graphics.fillStyle('#00FF00');
+	colorsGroup5.graphics.drawRect(PAD * 3, PAD * 9, SIZE, SIZE);
+	colorsGroup5.graphics.fill();
+	
+	colorsGroup5.graphics.fillStyle('#0000FF');
+	colorsGroup5.graphics.drawRect(PAD * 5, PAD * 9, SIZE, SIZE);
+	colorsGroup5.graphics.fill();
+	stage.addChild(colorsGroup5);
+	
+	// using 3 digit hex string eg. '#RGB'
+	
+	var colorsGroup6 = new Sprite();
+	colorsGroup6.graphics.fillStyle('#F00');
+	colorsGroup6.graphics.drawRect(PAD, PAD * 11, SIZE, SIZE);
+	colorsGroup6.graphics.fill();
+	
+	colorsGroup6.graphics.fillStyle('#0F0');
+	colorsGroup6.graphics.drawRect(PAD * 3, PAD * 11, SIZE, SIZE);
+	colorsGroup6.graphics.fill();
+	
+	colorsGroup6.graphics.fillStyle('#00f');
+	colorsGroup6.graphics.drawRect(PAD * 5, PAD * 11, SIZE, SIZE);
+	colorsGroup6.graphics.fill();
+	stage.addChild(colorsGroup6);
+	
+	// using 8 digit hex string eg. '#RRGGBBAA'
+	
+	var colorsGroup7 = new Sprite();
+	colorsGroup7.graphics.fillStyle('#FF00007F');
+	colorsGroup7.graphics.drawRect(PAD, PAD * 13, SIZE, SIZE);
+	colorsGroup7.graphics.fill();
+	
+	colorsGroup7.graphics.fillStyle('#00FF007F');
+	colorsGroup7.graphics.drawRect(PAD * 3, PAD * 13, SIZE, SIZE);
+	colorsGroup7.graphics.fill();
+	
+	colorsGroup7.graphics.fillStyle('#0000FF7F');
+	colorsGroup7.graphics.drawRect(PAD * 5, PAD * 13, SIZE, SIZE);
+	colorsGroup7.graphics.fill();
+	stage.addChild(colorsGroup7);
+}
+</script>
+</head>
+
+<body>
+
+<canvas id="myCanvas" width="400" height="500" style="position:absolute; left:0; top:0;" />
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>com.flanvas.filters.DropShadowFilter</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+window.onload = function() {
+	//_f.traceDiv = document.getElementById("trace");
+	//_f.clearTraceOnFrame = false;
+	_f.traceDraw = false;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+	
+	var active = false;
+	var angle = 0;
+	var radius = 15;
+	
+	var box = new Sprite();
+	box.x = 50;
+	box.y = 50;
+	box.graphics.fillStyle('rgb(153, 0, 0)');
+	box.graphics.drawRect(0, 0, 100, 100);
+	box.graphics.fill();
+	box.filters = [new com.flanvas.filters.DropShadowFilter('rgba(0,0,0,0.6)', 5, 0.00001, radius)];
+	stage.addChild(box);
+	
+	var tf = new com.flanvas.text.TextField();
+	tf.text = "Click Me!";
+	tf.textColor = "rgb(255,255,255)";
+	tf.x = 50;
+	tf.y = 50;
+	tf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
+	box.addChild(tf);
+	
+	box.addEventListener(MouseEvent.CLICK, function(event) {
+		active = !active;
+		alert(active);
+	});
+	
+	box.addEventListener(Event.ENTER_FRAME, function(event) {
+		trace(active);
+		if(active) {
+			angle -= 0.1;
+			
+			var sx = Math.sin(angle) * radius;
+			var sy = Math.cos(angle) * radius;
+			
+			box.filters = [new com.flanvas.filters.DropShadowFilter('rgba(0,0,0,0.6)', 5, sx, sy)];
+		}
+	});
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

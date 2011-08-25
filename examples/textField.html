@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - TextField</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+var dynTf;
+
+function changeText(str) {
+	dynTf.text = str;
+}
+
+window.onload = function() {
+	_f.traceDiv = document.getElementById('trace');
+	//_f.clearTraceOnFrame = false;
+	//_f.traceDraw = true;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+	
+	// the dynTf var is set up above so that the setTimeout func can find it (scope)
+	dynTf = new com.flanvas.text.TextField();
+	dynTf.x = 150.0;
+	dynTf.y = 50.0;
+	dynTf.text = 'Working with the TextField Class in flanvas.';
+	dynTf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
+	stage.addChild(dynTf);
+	setTimeout('changeText(\'Change the text to say this.\')', 2000);
+	
+	var leftTf = new com.flanvas.text.TextField();
+	leftTf.text = 'This is left aligned';
+	leftTf.autoSize = com.flanvas.text.TextFieldAutoSize.LEFT;
+	leftTf.x = 150.0;
+	leftTf.y = 100;
+	
+	var centerTf = new com.flanvas.text.TextField();
+	centerTf.text = 'This text is center aligned';
+	centerTf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
+	centerTf.x = 150.0;
+	centerTf.y = 130;
+	
+	var rightTf = new com.flanvas.text.TextField();
+	rightTf.text = 'This text is right aligned';
+	rightTf.autoSize = com.flanvas.text.TextFieldAutoSize.RIGHT;
+	rightTf.x = 150.0;
+	rightTf.y = 160;
+	
+	var inputTf = new com.flanvas.text.TextField();
+	inputTf.text = 'This is an input field';
+	inputTf.type = com.flanvas.text.TextFieldType.INPUT;
+	//inputTf.autoSize = com.flanvas.text.TextFieldAutoSize.LEFT;
+	inputTf.border = true;
+	inputTf.x = 150.0;
+	inputTf.y = 190;
+	
+	var mlTf = new com.flanvas.text.TextField();
+	mlTf.text = 'This is a text field where the text is too long to fit on one line';
+	mlTf.width = 100;
+	mlTf.wordWrap = true;
+	mlTf.x = 100;
+	mlTf.y = 220;
+	
+	stage.addChild(leftTf);
+	stage.addChild(centerTf);
+	stage.addChild(rightTf);
+	stage.addChild(inputTf);
+	stage.addChild(mlTf);
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

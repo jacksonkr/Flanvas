@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Ztype - remix</title>
+		<script src="../src/flanvas.js" type="text/javascript"></script>
+		<script>
+		window.onload = function() {
+			//_f.traceDiv = document.getElementById('trace');
+			//_f.clearTraceOnFrame = false;
+			//_f.traceDraw = true;
+			stage.canvas = document.getElementById('ztype-remix');
+			stage.fps = 24;
+	
+			function Ship() {
+				this._construct();
+			}
+			Ship.prototype._construct = function() {
+				this._speed = 5;
+		
+				this.__defineGetter__('speed', function() {
+					return this._speed;
+				});
+				this.__defineSetter__('speed', function(val) {
+					this._speed = val;
+				});
+			}
+			Ship.extend(com.flanvas.display.Sprite);
+	
+			function ZgameRemix() {
+				this._construct();
+				this.level = 0;
+				this._startMenu;
+			}
+			ZgameRemix.prototype._construct = function() {
+				this.startMenu();
+			}
+			ZgameRemix.extend(com.flanvas.events.EventDispatcher);
+			ZgameRemix.prototype.beginLevel = function() {
+				alert('beginning level: ' + this.level);
+			}
+			ZgameRemix.prototype.completeLevel = function() {
+				++this.level;
+				this.beginLevel();
+			}
+			ZgameRemix.prototype.pauseMenu = function(bool) {
+				if(bool === undefined) bool = true;
+		
+				if(bool) {
+					// show menu
+				} else {
+					// hide menu
+				}
+			}
+			ZgameRemix.prototype.startMenu = function(bool) {
+				if(bool === undefined) bool = true;
+		
+				if(bool) {
+					if(!this._startMenu) {
+						this._startMenu = new Svg(URLRequest('startMenu.svg'));
+						this.addChild(this._startMenu);
+					}
+				} else {
+					this.removeChild(this._startMenu);
+					this._startMenu = undefined;
+				}
+			}
+		}
+		</script>
+	</head>
+	<body>
+		<canvas id="ztype-remix" width="400" height="600"></canvas>
+	</body>
+</html>

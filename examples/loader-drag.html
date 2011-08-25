@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - Dragging</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	//_f.traceDiv = document.getElementById("trace");
+	//_f.clearTraceOnFrame = false;
+	//_f.traceDraw = false;
+	stage.canvas = (document.getElementById('myCanvas'));
+	stage.fps = 24;
+	
+	var clickProps;
+	var img = new Loader();
+	
+	img.contentLoaderInfo.addEventListener(Event.COMPLETE, function(event) {
+		stage.addChild(img);
+		img.addEventListener(MouseEvent.MOUSE_DOWN, contMouseDownHandler);
+	});
+	
+	function contMouseDownHandler(event) {
+		clickProps = {'x':img.x,'y':img.y,'mouseX':stage.mouseX,'mouseY':stage.mouseY};
+		stage.addEventListener(MouseEvent.MOUSE_MOVE, contMouseMoveHandler);
+		stage.addEventListener(MouseEvent.MOUSE_UP, contMouseUpHandler);
+	}
+	function contMouseMoveHandler(event) {
+		img.x = clickProps.x + (stage.mouseX - clickProps.mouseX);
+		img.y = clickProps.y + (stage.mouseY - clickProps.mouseY);
+	}
+	function contMouseUpHandler(event) {
+		stage.removeEventListener(MouseEvent.MOUSE_MOVE, contMouseMoveHandler);
+		stage.removeEventListener(MouseEvent.MOUSE_UP, contMouseUpHandler);
+	}
+	
+	img.load(new URLRequest("http://flanvas.com/images/logo.gif"));
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>

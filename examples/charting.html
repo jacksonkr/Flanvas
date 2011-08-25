@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - Charting</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script src="../com/flanvas/charts/charting.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	_f.traceDiv = document.getElementById("trace");
+	//_f.clearTraceOnFrame = false;
+	//_f.traceDraw = false;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+	
+	var chart = new com.flanvas.charts.LineChart();
+	chart.showDataTips = true;
+	
+	var ha = new com.flanvas.charts.CategoryAxis();
+	ha.categoryField = 'Month';
+	chart.horizontalAxis = ha;
+	
+	var ls1 = new com.flanvas.charts.LineSeries();
+	ls1.yField = "profit";
+	ls1.displayName = "Profit";
+	var ls2 = new com.flanvas.charts.LineSeries();
+	ls2.yField = "expenses";
+	ls2.displayName = "Expenses";
+	var ls3 = new com.flanvas.charts.LineSeries();
+	ls3.yField = "amount";
+	ls3.displayName = "Amount";
+	chart.series = [ls1, ls2, ls3];
+	
+	var d = new ArrayCollection([
+		{Month:"Jan", Profit:2000, Expenses:1500, Amount:450},
+		{Month:"Feb", Profit:1000, Expenses:200, Amount:600},
+		{Month:"Mar", Profit:1500, Expenses:500, Amount:300}
+    ]);
+	chart.dataProvider = d;
+	
+	stage.addChild(chart);
+	
+	var legend = new com.flanvas.charts.Legend();
+	legend.dataProvider = chart;
+}
+</script>
+</head>
+
+<body>
+
+<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
+<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+
+</body>
+</html>
