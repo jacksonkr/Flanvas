@@ -606,6 +606,7 @@ try{
 			if(isNaN(val)) throw new ArgumentError("Value must be a Number.");
 			
 			ptr._alpha = val;
+			ptr.invalidate();
 		});
 		/**
 		 * This allows the developer / designer to see the origin
@@ -616,12 +617,14 @@ try{
 		});
 		this.__defineSetter__('drawOrigin', function(bool) {
 			ptr._show_origin = bool;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('filters', function() {
 			return this._filters;
 		});
 		this.__defineSetter__('filters', function(arr) {
 			this._filters = arr;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('height', function() {
 			var r = new Rectangle(0, 0, 0, 0);
@@ -647,6 +650,7 @@ try{
 			if(isNaN(val)) throw new ArgumentError("Height must be a Number.");
 			if(this.height > 0) this.scaleY = val / this.height;
 			else this.scaleY = 0;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('mask', function() {
 			return this._mask;
@@ -677,6 +681,7 @@ try{
 		});
 		this.__defineSetter__('rotation', function(val) {
 			ptr._rotation = val;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('stage', function() {
 			return ptr._stage;
@@ -692,12 +697,14 @@ try{
 		});
 		this.__defineSetter__('x', function(val) {
 			ptr._x = val;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('y', function() {
 			return ptr._y;
 		});
 		this.__defineSetter__('y', function(val) {
 			ptr._y = val;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('width', function() {
 			var r = new Rectangle(0, 0, 0, 0);
@@ -723,6 +730,7 @@ try{
 			if(isNaN(val)) throw new ArgumentError("value must be a number");
 			if(this.width > 0) this.scaleX = val / this.width;
 			else this.scaleX = 0;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('scaleX', function() {
 			return Number(this._scale_x);
@@ -730,6 +738,7 @@ try{
 		this.__defineSetter__('scaleX', function(val) {
 			if(isNaN(val) || !isFinite(val)) throw new ArgumentError("value must be a number");
 			this._scale_x = val;
+			ptr.invalidate();
 		});
 		this.__defineGetter__('scaleY', function() {
 			return Number(this._scale_y);
@@ -737,6 +746,7 @@ try{
 		this.__defineSetter__('scaleY', function(val) {
 			if(isNaN(val)) throw new ArgumentError("value must be a number");
 			this._scale_y = val;
+			ptr.invalidate();
 		});
 		
 		this.name = _f.genId();
@@ -773,138 +783,144 @@ try{
 			}
 			
 			// draw graphics
-			if(this.visible && !this.validated)  {
-				// draw filters
-				for(i in this.filters) {
-					this.filters[i].drawSelf();
-					//if(_f.traceDraw) trace(this.filters[i]._instructions[j]);
-				}
-				
-				for(var i in arr) {
-					try {
-						if(arr[i] instanceof Array) {
-							var cmd = arr[i][0];
-							
-							switch(cmd) {
-								case Instruction.ARC:
-									// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
-									var pt = this.pp(arr[i][1], arr[i][2]);
-									ctx.arc(pt.x, pt.y, arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
-
-								break;
-								case Instruction.BEGINPATH:
-									// [Instruction.BEGINPATH]
-									ctx.beginPath();
-								break;
-								case Instruction.BEZIERCURVETO:
-									// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
-									var cp1 = this.pp(arr[i][1], arr[i][2]);
-									var cp2 = this.pp(arr[i][3], arr[i][4]);
-									var pt = this.pp(arr[i][5], arr[i][6]);
-									ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, pt.x, pt.y);
-								break;
-								case Instruction.CLIP:
-									// [Instruction.CLIP]
-									ctx.clip();
-								break;
-								case Instruction.CLOSEPATH:
-									// [Instruction.CLOSEPATH]
-									ctx.closePath();
-								break;
-								case Instruction.FILL:
-									// [Instruction.FILL]
-									ctx.fill();
-								break;
-								case Instruction.FILLSTYLE:
-									// [Instruction.FILLSTYLE, Utils.rgba(val)]
-									ctx.fillStyle = this.graphics.compileStyle(arr[i][1]);
-								break;
-								case Instruction.LINECAP:
-									// [Instruction.LINECAP, val]
-									ctx.lineCap = arr[i][1];
-								break;
-								case Instruction.LINEJOIN:
-									// [Instruction.LINEJOIN]
-									ctx.lineJoin = arr[i][1];
-								break;
-								case Instruction.LINETO:
-									// [Instruction.LINETO, x, y]
-									var pt = this.pp(arr[i][1], arr[i][2]);
-									ctx.lineTo(pt.x, pt.y);
-								break;
-								case Instruction.LINEWIDTH:
-									// [Instruction.LINEWIDTH, val]
-									ctx.lineWidth = arr[i][1];
-								break;
-								case Instruction.MITERLIMIT:
-									// [Instruction.MITERLIMIT, val]
-									ctx.miterLimit = arr[i][1];
-								break;
-								case Instruction.MOVETO:
-									// [Instruction.MOVETO, x, y]
-									var pt = this.pp(arr[i][1], arr[i][2]);
-									ctx.moveTo(pt.x, pt.y);
-								break;
-								case Instruction.QUADRATICCURVETO:
-									// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
-									var cp = pp(arr[i][1], arr[i][2]);
-									var pt = pp(arr[i][3], arr[i][4]);
-									ctx.quadraticCurveTo(cp.x, cp.y, pt.x, pt.y);
-								break;
-								case Instruction.STROKE:
-									// [Instruction.STROKE]
-									ctx.stroke();
-								break;
-								case Instruction.STROKESTYLE:
-									// [Instruction.STROKESTYLE, val]
-									ctx.strokeStyle = this.graphics.compileStyle(arr[i][1]);
-								break;
-								case Instruction.TEXTFIELD:
-									// [Instruction.TEXTFIELD]
-									if(this.background) {
-										ctx.fillStyle = this.backgroundColor;
-										ctx.fillRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
-									}
-									if(this.border) {
-										ctx.strokeStyle = this.borderColor;
-										ctx.lineWidth = 1;
-										ctx.strokeRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.left + com.flanvas.text.TextField.PADDING.right, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
-									}
-									
-									ctx.font = this.font;
-									ctx.fillStyle = this.graphics.compileStyle(this.textColor);
-									ctx.textAlign = this.autoSize;
-									
-									/**
-									 * This part needs mas work. Not the proper way to wrap text
-									 */
-									var text_Arr = this.text.split('\n');
-									if(text_Arr.length > 1) {
-										for(j = 0; j < text_Arr.length; ++j) {
-											ctx.fillText(text_Arr[j], this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height + (this.size * j), this.width);
-										}
-									} else {
-										// no wrap
-										ctx.fillText(this.text, this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height, this.width);
-									}
-									
-									if(this._cursor_visible) {
-										var w = this.absX + ctx.measureText(this.text.substr(0, this.caretIndex)).width + com.flanvas.text.TextField.PADDING.left;
-										ctx.beginPath();
-										ctx.moveTo(w, this.absY + com.flanvas.text.TextField.PADDING.top);
-										ctx.lineTo(w, this.absY + this.height - com.flanvas.text.TextField.PADDING.top);
-										ctx.closePath();
-										ctx.stroke();
-									}
-								break;
-							}
-						} else {
-							eval(arr[i]);
-						}
-						if(_f.traceDraw) trace(arr[i]);
-					} catch(e) {
-						throw new Error(e + "; " + arr[i]);
+			if(this.visible)  {
+				if(!this._validated) {
+					// validate this item.
+					//this._validated = true;
+					
+					// draw filters
+					for(i in this.filters) {
+						this.filters[i].drawSelf();
+						//if(_f.traceDraw) trace(this.filters[i]._instructions[j]);
 					}
+				
+					for(var i in arr) {
+						try {
+							if(arr[i] instanceof Array) {
+								var cmd = arr[i][0];
+							
+								switch(cmd) {
+									case Instruction.ARC:
+										// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
+										var pt = this.pp(arr[i][1], arr[i][2]);
+										ctx.arc(pt.x, pt.y, arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
+									break;
+									case Instruction.BEGINPATH:
+										// [Instruction.BEGINPATH]
+										ctx.beginPath();
+									break;
+									case Instruction.BEZIERCURVETO:
+										// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
+										var cp1 = this.pp(arr[i][1], arr[i][2]);
+										var cp2 = this.pp(arr[i][3], arr[i][4]);
+										var pt = this.pp(arr[i][5], arr[i][6]);
+										ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, pt.x, pt.y);
+									break;
+									case Instruction.CLIP:
+										// [Instruction.CLIP]
+										ctx.clip();
+									break;
+									case Instruction.CLOSEPATH:
+										// [Instruction.CLOSEPATH]
+										ctx.closePath();
+									break;
+									case Instruction.FILL:
+										// [Instruction.FILL]
+										ctx.fill();
+									break;
+									case Instruction.FILLSTYLE:
+										// [Instruction.FILLSTYLE, Utils.rgba(val)]
+										ctx.fillStyle = this.graphics.compileStyle(arr[i][1]);
+									break;
+									case Instruction.LINECAP:
+										// [Instruction.LINECAP, val]
+										ctx.lineCap = arr[i][1];
+									break;
+									case Instruction.LINEJOIN:
+										// [Instruction.LINEJOIN]
+										ctx.lineJoin = arr[i][1];
+									break;
+									case Instruction.LINETO:
+										// [Instruction.LINETO, x, y]
+										var pt = this.pp(arr[i][1], arr[i][2]);
+										ctx.lineTo(pt.x, pt.y);
+									break;
+									case Instruction.LINEWIDTH:
+										// [Instruction.LINEWIDTH, val]
+										ctx.lineWidth = arr[i][1];
+									break;
+									case Instruction.MITERLIMIT:
+										// [Instruction.MITERLIMIT, val]
+										ctx.miterLimit = arr[i][1];
+									break;
+									case Instruction.MOVETO:
+										// [Instruction.MOVETO, x, y]
+										var pt = this.pp(arr[i][1], arr[i][2]);
+										ctx.moveTo(pt.x, pt.y);
+									break;
+									case Instruction.QUADRATICCURVETO:
+										// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
+										var cp = pp(arr[i][1], arr[i][2]);
+										var pt = pp(arr[i][3], arr[i][4]);
+										ctx.quadraticCurveTo(cp.x, cp.y, pt.x, pt.y);
+									break;
+									case Instruction.STROKE:
+										// [Instruction.STROKE]
+										ctx.stroke();
+									break;
+									case Instruction.STROKESTYLE:
+										// [Instruction.STROKESTYLE, val]
+										ctx.strokeStyle = this.graphics.compileStyle(arr[i][1]);
+									break;
+									case Instruction.TEXTFIELD:
+										// [Instruction.TEXTFIELD]
+										if(this.background) {
+											ctx.fillStyle = this.backgroundColor;
+											ctx.fillRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
+										}
+										if(this.border) {
+											ctx.strokeStyle = this.borderColor;
+											ctx.lineWidth = 1;
+											ctx.strokeRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.left + com.flanvas.text.TextField.PADDING.right, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
+										}
+									
+										ctx.font = this.font;
+										ctx.fillStyle = this.graphics.compileStyle(this.textColor);
+										ctx.textAlign = this.autoSize;
+									
+										/**
+										 * This part needs mas work. Not the proper way to wrap text
+										 */
+										var text_Arr = this.text.split('\n');
+										if(text_Arr.length > 1) {
+											for(j = 0; j < text_Arr.length; ++j) {
+												ctx.fillText(text_Arr[j], this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height + (this.size * j), this.width);
+											}
+										} else {
+											// no wrap
+											ctx.fillText(this.text, this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height, this.width);
+										}
+									
+										if(this._cursor_visible) {
+											var w = this.absX + ctx.measureText(this.text.substr(0, this.caretIndex)).width + com.flanvas.text.TextField.PADDING.left;
+											ctx.beginPath();
+											ctx.moveTo(w, this.absY + com.flanvas.text.TextField.PADDING.top);
+											ctx.lineTo(w, this.absY + this.height - com.flanvas.text.TextField.PADDING.top);
+											ctx.closePath();
+											ctx.stroke();
+										}
+									break;
+								}
+							} else {
+								eval(arr[i]);
+							}
+							if(_f.traceDraw) trace(arr[i]);
+						} catch(e) {
+							throw new Error(e + "; " + arr[i]);
+						}
+					}
+				} else {
+					// just draw the existing DisplayObject
 				}
 				
 				try {
@@ -3233,20 +3249,29 @@ try{
 			 * I'm sure there's a problem somewhere with doing this, but it's working
 			 * so far.
 			 */
-			document.addEventListener('keydown', function(event) {
-				event.stopPropagation();
-				event.preventDefault();
-				ptr._lastKeyDownEvent = event;
-			}, false);
-			document.addEventListener('keypress', function(event) {
-				event.stopPropagation();
-				event.preventDefault();
-				ptr.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, ptr._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
-			}, false);
-			document.addEventListener('keyup', function(event) {
-				event.stopPropagation();
-				event.preventDefault();
-				ptr.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+			document.addEventListener('click', function(event) {
+				// this._canvas is set to obj
+				if(event.target == obj) {
+					obj.addEventListener('keydown', function(event) {
+						event.stopPropagation();
+						event.preventDefault();
+						ptr._lastKeyDownEvent = event;
+					}, false);
+					obj.addEventListener('keypress', function(event) {
+						event.stopPropagation();
+						event.preventDefault();
+						ptr.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, ptr._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+					}, false);
+					obj.addEventListener('keyup', function(event) {
+						event.stopPropagation();
+						event.preventDefault();
+						ptr.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+					}, false);
+				} else {
+					obj.removeEventListener('keydown');
+					obj.removeEventListener('keypress');
+					obj.removeEventListener('keyup');
+				}
 			}, false);
 			
 			this.dispatchEvent(new Event(Stage.CANVAS_SET));
