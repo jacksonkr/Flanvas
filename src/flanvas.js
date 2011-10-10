@@ -3181,8 +3181,9 @@ try{
 		this._lastKeyDownEvent = undefined;
 		this._stage_height = undefined;
 		this._stage_width = undefined;
+		this._keyboard_attached = false;
 		
-		var ptr = this;
+		var self = this;
 		this.__defineGetter__('canvas', function() {
 			return this._canvas;
 		});
@@ -3194,8 +3195,8 @@ try{
 				 * subtract the offsets to get the actual mouse props for the canvas
 				 * after the canvas recieves modified x/y etc
 				 */
-				ptr._mouse_x = x - ptr.canvas.offsetLeft;
-				ptr._mouse_y = y - ptr.canvas.offsetTop;
+				self._mouse_x = x - self.canvas.offsetLeft;
+				self._mouse_y = y - self.canvas.offsetTop;
 			}
 			
 			if((new RegExp('iphone|ipod|ipad', 'i')).test(navigator.userAgent)) {
@@ -3209,36 +3210,36 @@ try{
 				this.canvas.addEventListener('touchstart', function(event) {
 					var tt = touchType(event);
 					mousePos(event[tt][0].clientX, event[tt][0].clientY);
-					ptr._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
+					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
 				});
 				this.canvas.addEventListener('touchmove', function(event) {
 					var tt = touchType(event);
 					mousePos(event[tt][0].clientX, event[tt][0].clientY);
-					var t = ptr.findMouseTarget();
-					//ptr._currentMouseTarget = t;
+					var t = self.findMouseTarget();
+					//self._currentMouseTarget = t;
 					t.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_MOVE));
 				});
 				this.canvas.addEventListener('touchend', function(event) {
 					var tt = touchType(event);
 					mousePos(event[tt][0].clientX, event[tt][0].clientY);
-					ptr._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
+					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
 				});
 			} else {
 				// regular mouse listening
 				this.canvas.addEventListener('mousedown', function(event) {
 					mousePos(event.pageX, event.pageY);
-					ptr.focus = ptr._currentMouseTarget;
-					ptr._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
+					self.focus = self._currentMouseTarget;
+					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
 				}, false);
 				this.canvas.addEventListener('mousemove', function(event) {
 					mousePos(event.pageX, event.pageY);
-					var t = ptr.findMouseTarget();
-					//ptr._currentMouseTarget = t;
+					var t = self.findMouseTarget();
+					//self._currentMouseTarget = t;
 					t.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_MOVE));
 				}, false);
 				this.canvas.addEventListener('mouseup', function(event) {
 					mousePos(event.pageX, event.pageY);
-					ptr._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
+					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
 				}, false);
 			}
 			
@@ -3249,28 +3250,35 @@ try{
 			 * I'm sure there's a problem somewhere with doing this, but it's working
 			 * so far.
 			 */
+			this.keyDownHandler = function(event) {
+				event.stopPropagation();
+				event.preventDefault();
+				self._lastKeyDownEvent = event;
+			}
+			this.keyUpHandler = function(event) {
+				event.stopPropagation();
+				event.preventDefault();
+				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+			}
+			this.keyPressHandler = function(event) {
+				event.stopPropagation();
+				event.preventDefault();
+				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, ptr._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+			}
+
 			document.addEventListener('click', function(event) {
-				// this._canvas is set to obj
-				if(event.target == obj) {
-					obj.addEventListener('keydown', function(event) {
-						event.stopPropagation();
-						event.preventDefault();
-						ptr._lastKeyDownEvent = event;
-					}, false);
-					obj.addEventListener('keypress', function(event) {
-						event.stopPropagation();
-						event.preventDefault();
-						ptr.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, ptr._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
-					}, false);
-					obj.addEventListener('keyup', function(event) {
-						event.stopPropagation();
-						event.preventDefault();
-						ptr.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
-					}, false);
+				if(event.target == self._canvas) {
+					if(!self._keyboard_attached) {
+						document.addEventListener('keydown', self.keyDownHandler, false);
+						document.addEventListener('keypress', self.keyPressHandler, false);
+						document.addEventListener('keyup', self.keyUpHandler, false);
+						self._keyboard_attached = true
+					}
 				} else {
-					obj.removeEventListener('keydown');
-					obj.removeEventListener('keypress');
-					obj.removeEventListener('keyup');
+					document.removeEventListener('keydown', self.keyDownHandler);
+					document.removeEventListener('keypress', self.keyPressHandler);
+					document.removeEventListener('keyup', self.keyUpHandler);
+					self._keyboard_attached = false;
 				}
 			}, false);
 			
