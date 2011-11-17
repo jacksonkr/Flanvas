@@ -14,17 +14,23 @@ window.onload = function() {
 	
 	var box = new Sprite();
 	box.name = "box";
-	box.graphics.fillStyle('rgba(153, 0, 0, 0.5)');
-	box.graphics.drawRect(50, 50, 100, 100);
+	//box.graphics.fillStyle('rgba(153, 0, 0, 0.5)');
+	box.graphics.fillStyle(0x99000099);
+	box.graphics.drawRect(0, 0, 100, 100);
 	box.graphics.fill();
+	box.x = 50;
+	box.y = 50;
 	stage.addChild(box);
 	
 	var circle = new Sprite();
 	circle.name = "circle";
 	circle.graphics.beginFill(0x000099, 0.5);
-	circle.graphics.drawCircle(125, 125, 25);
+	//circle.graphics.fillStyle(0x00009999);
+	circle.graphics.drawCircle(0, 0, 25);
 	circle.graphics.endFill();
-	stage.box.addChild(circle);
+	circle.x = 50;
+	circle.y = 50;
+	box.addChild(circle);
 	
 	box.scaleX = 2.0;
 }
