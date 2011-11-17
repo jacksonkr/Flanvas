@@ -3737,7 +3737,7 @@ try{
 	}
 	
 	var _f = new MainTimeline();
-	_f.VERSION = "r32";
+	_f.VERSION = "0.033";
 	var stage = new com.flanvas.display.Stage();
 	_f.setStage(stage);
 	
