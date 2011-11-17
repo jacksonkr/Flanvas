@@ -408,9 +408,9 @@ try{
 		this._interval_id = undefined;
 		this._listeners = [];
 		
-		var ptr = this;
+		var self = this;
 		if(_f) _f.intervalManager.addEventListener(Event.ENTER_FRAME, function(event) {
-			ptr.dispatchEvent(new Event(Event.ENTER_FRAME));
+			self.dispatchEvent(new Event(Event.ENTER_FRAME));
 		});
 	}
 	com.flanvas.events.EventDispatcher.extend(Object);
@@ -556,21 +556,37 @@ try{
 		this._mouse_x = 0;
 		this._mouse_y = 0;
 		this._name = "";
+		/** 
+		 * The Source Offset is the offset from 0,0 for the source context of a display item.
+		 * For example: When a circle is drawn, 3/4 of the circle is draw outside the visible
+		 * area of the source context. the Source Offset allows the context to grow in size, but
+		 * keep the relative position of the 0,0 for the object.
+		 */
+		this._sourceOffset;
 		this._rotation = 0;
 		this._root = undefined;
 		this._stage = undefined;
 		this._scale_x = 1.0;
 		this._scale_y = 1.0;
 		this._show_origin = false;
+		/**
+		 * _source holds the source context (canvas element) for the original drawing of this item.
+		 * The _source is only changed with drawing requires validation (changing color, adding graphics, etc)
+		 */
+		this._source;
 		this._transform = new Transform();
 		this._x = 0;
 		this._y = 0;
 		this._validated = false;
+
+
+		this._source = Utils.virtualContext(false);
+		this._sourceOffset = {x:0, y:0};
 		
 		this.parent = undefined;
 		this.visible = true;
 		
-		var ptr = this;
+		var self = this;
 		this.__defineGetter__('absAlpha', function() {
 			if(this.parent) return this.parent.absAlpha * Number(this.alpha);
 			return Number(this.alpha);
@@ -592,65 +608,93 @@ try{
 			return Number(this.scaleY);
 		});
 		this.__defineGetter__('absX', function() {
-			if(this.parent) return this.parent.absX + Number(this.x);
-			return Number(this.x);
+			//trace(this.name)
+
+			var dx = this.x;// + this.parent.absScaleX;
+			if(this.parent) {
+				var dy = this.y;// + this.parent.absScaleY;
+				// incorporate parent's rotation
+				var ld2p = Math.sqrt(dx*dx + dy*dy); // local
+				var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
+				var latan2 = Math.atan2(dy, dx); // local atan2 rads
+				
+				//local
+				return this.parent.absX + Math.cos(latan2 + gang) * ld2p;
+
+				//return this.parent.absX + Number(this.x) + this._sourceOffset.x;
+			}
+			return Number(dx);
 		});
 		this.__defineGetter__('absY', function() {
-			if(this.parent) return this.parent.absY + Number(this.y);
-			return Number(this.y);
+			var dy = this.y;// + this.parent.absScaleY;
+			if(this.parent) {
+				// incorporate parent's rotation
+				var dx = this.x;// + this.parent.absScaleX;
+				var ld2p = Math.sqrt(dx*dx + dy*dy); // local
+				var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
+				var latan2 = Math.atan2(dy, dx); // local atan2 rads
+				
+				//local
+				return this.parent.absY + Math.sin(latan2 + gang) * ld2p;
+
+				//return this.parent.absY + Number(this.y) + this._sourceOffset.y;
+			}
+			return Number(dy);
 		});
 		this.__defineGetter__('alpha', function() {
-			return ptr._alpha;
+			return self._alpha;
 		});
 		this.__defineSetter__('alpha', function(val) {
 			if(isNaN(val)) throw new ArgumentError("Value must be a Number.");
 			
-			ptr._alpha = val;
-			ptr.invalidate();
+			self._alpha = val;
+			self.invalidate();
 		});
 		/**
 		 * This allows the developer / designer to see the origin
 		 * of the DisplayObject they are working with
 		 */
 		this.__defineGetter__('drawOrigin', function() {
-			return ptr._show_origin;
+			return self._show_origin;
 		});
 		this.__defineSetter__('drawOrigin', function(bool) {
-			ptr._show_origin = bool;
-			ptr.invalidate();
+			self._show_origin = bool;
+			self.invalidate();
 		});
 		this.__defineGetter__('filters', function() {
 			return this._filters;
 		});
 		this.__defineSetter__('filters', function(arr) {
 			this._filters = arr;
-			ptr.invalidate();
+			self.invalidate();
 		});
 		this.__defineGetter__('height', function() {
 			var r = new Rectangle(0, 0, 0, 0);
-			if(ptr._children) {
-				for(var c = 0; c < ptr._children.length; ++c) {
-					if(ptr._children[c].y < r.y) r.y = ptr._children[c].y;
-					if(ptr._children[c].y + ptr._children[c].height > r.height) r.height = ptr._children[c].y + ptr._children[c].height;
+			if(self._children) {
+				for(var c = 0; c < self._children.length; ++c) {
+					if(self._children[c].y < r.y) r.y = self._children[c].y;
+					if(self._children[c].y + self._children[c].height > r.height) r.height = self._children[c].y + self._children[c].height;
 				}
 			}
 			
-			if(ptr.graphics._points) {
-				for(var p = 0; p < ptr.graphics._points.length; ++p) {
-					var pt = ptr.graphics._points[p];
-					var rp = ptr.pp(pt.x, pt.y);
-					if(rp.y - ptr.absY < r.y) r.y = rp.y - ptr.absY;
-					if(rp.y - ptr.absY > r.height) r.height = rp.y - ptr.absY;
+			if(self.graphics._points) {
+				for(var p = 0; p < self.graphics._points.length; ++p) {
+					var pt = self.graphics._points[p];
+					var rp = self.pp(pt.x, pt.y);
+					if(rp.y - self.absY < r.y) r.y = rp.y - self.absY;
+					if(rp.y - self.absY > r.height) r.height = rp.y - self.absY;
 				}
 			}
-			
-			return r.height * ptr.absScaleY;
+
+			return r.height * self.absScaleY;
 		});
 		this.__defineSetter__('height', function(val) {
 			if(isNaN(val)) throw new ArgumentError("Height must be a Number.");
-			if(this.height > 0) this.scaleY = val / this.height;
-			else this.scaleY = 0;
-			ptr.invalidate();
+			if(this.height > 0) {
+				this._source.height = val;//r.height;
+				this.scaleY = val / this.height;
+			}
+			self.invalidate();
 		});
 		this.__defineGetter__('mask', function() {
 			return this._mask;
@@ -666,45 +710,44 @@ try{
 			return this.stage.mouseY - this.absY;
 		});
 		this.__defineGetter__('name', function(val) {
-			return ptr._name;
+			return self._name;
 		});
 		this.__defineSetter__('name', function(val) {
-			if(ptr.parent && ptr.name) ptr.parent[ptr.name] = undefined;
-			ptr._name = val;
-			if(ptr.parent) ptr.parent[ptr.name] = ptr;
+			if(self.parent && self.name) self.parent[self.name] = undefined;
+			self._name = val;
+			if(self.parent) self.parent[self.name] = self;
 		});
 		this.__defineGetter__('root', function() {
-			return ptr._root;
+			return self._root;
 		});
 		this.__defineGetter__('rotation', function() {
-			return ptr._rotation;
+			return self._rotation;
 		});
 		this.__defineSetter__('rotation', function(val) {
-			ptr._rotation = val;
-			ptr.invalidate();
+			self._rotation = val;
 		});
 		this.__defineGetter__('stage', function() {
-			return ptr._stage;
+			return self._stage;
 		});
 		this.__defineGetter__('transform', function() {
-			return ptr._transform;
+			return self._transform;
 		});
 		this.__defineSetter__('transform', function(obj) {
-			ptr._transform = val;
+			self._transform = val;
 		});
 		this.__defineGetter__('x', function() {
-			return ptr._x;
+			if(this.parent) return this._x * this.parent.absScaleX;
+			return this._x;
 		});
 		this.__defineSetter__('x', function(val) {
-			ptr._x = val;
-			ptr.invalidate();
+			self._x = val;
 		});
 		this.__defineGetter__('y', function() {
-			return ptr._y;
+			if(this.parent) return this._y * this.parent.absScaleY;
+			return this._y;
 		});
 		this.__defineSetter__('y', function(val) {
-			ptr._y = val;
-			ptr.invalidate();
+			self._y = val;
 		});
 		this.__defineGetter__('width', function() {
 			var r = new Rectangle(0, 0, 0, 0);
@@ -728,9 +771,10 @@ try{
 		});
 		this.__defineSetter__('width', function(val) {
 			if(isNaN(val)) throw new ArgumentError("value must be a number");
-			if(this.width > 0) this.scaleX = val / this.width;
-			else this.scaleX = 0;
-			ptr.invalidate();
+			if(this.width > 0) {
+				this._source.width = val;
+				this.scaleX = val / this.width;
+			} else this.scaleX = 0;
 		});
 		this.__defineGetter__('scaleX', function() {
 			return Number(this._scale_x);
@@ -738,7 +782,7 @@ try{
 		this.__defineSetter__('scaleX', function(val) {
 			if(isNaN(val) || !isFinite(val)) throw new ArgumentError("value must be a number");
 			this._scale_x = val;
-			ptr.invalidate();
+			this.invalidate();
 		});
 		this.__defineGetter__('scaleY', function() {
 			return Number(this._scale_y);
@@ -746,7 +790,7 @@ try{
 		this.__defineSetter__('scaleY', function(val) {
 			if(isNaN(val)) throw new ArgumentError("value must be a number");
 			this._scale_y = val;
-			ptr.invalidate();
+			this.invalidate();
 		});
 		
 		this.name = _f.genId();
@@ -754,24 +798,27 @@ try{
 		this.graphics = new Graphics();
 		this.graphics.displayObject = this;
 		
-		var ptr = this;
+		var self = this;
 		this.addEventListener(Event.ADDED_TO_STAGE, function(event) {
-			ptr._root = _f;
-			ptr._stage = _f.stage;
+			self._root = _f;
+			self._stage = _f.stage;
 		});
 		this.addEventListener(Event.REMOVED, function(event) {
-			ptr._root = undefined;
-			ptr.parent[event.target.name] = undefined;
+			self._root = undefined;
+			self.parent[event.target.name] = undefined;
 		});
 		this.addEventListener(Event.REMOVED_FROM_STAGE, function(event) {
-			ptr.parent = undefined;	
+			self.parent = undefined;	
 		});
+
+		//this.drawOrigin = true;
 	}
 	com.flanvas.display.DisplayObject.extend(com.flanvas.events.EventDispatcher);
 	com.flanvas.display.DisplayObject.prototype.drawSelf = function() {
 		if(this.visible && this.root) {
 			var arr = this.graphics.data;
-			var ctx = _f.stage.ctx;
+			//var ctx = _f.stage.ctx;
+			var ctx = this._source.getContext("2d");
 			
 			/**
 			 * I'm using this to define gradients used by SVG
@@ -786,14 +833,14 @@ try{
 			if(this.visible)  {
 				if(!this._validated) {
 					// validate this item.
-					//this._validated = true;
+					this._validated = true;
 					
 					// draw filters
 					for(i in this.filters) {
 						this.filters[i].drawSelf();
-						//if(_f.traceDraw) trace(this.filters[i]._instructions[j]);
+						if(_f.traceDraw) trace(this.filters[i]._instructions[j]);
 					}
-				
+					
 					for(var i in arr) {
 						try {
 							if(arr[i] instanceof Array) {
@@ -802,8 +849,17 @@ try{
 								switch(cmd) {
 									case Instruction.ARC:
 										// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
+										/*
+										// before using transforms
 										var pt = this.pp(arr[i][1], arr[i][2]);
 										ctx.arc(pt.x, pt.y, arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
+										*/
+
+										// offset.x < x + radius
+										if(this._sourceOffset.x < arr[i][1] + arr[i][3]) this._sourceOffset.x = arr[i][1] + arr[i][3];
+										if(this._sourceOffset.y < arr[i][2] + arr[i][3]) this._sourceOffset.y = arr[i][2] + arr[i][3];
+										
+										ctx.arc(this._sourceOffset.x + arr[i][1], this._sourceOffset.y + arr[i][2], arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
 									break;
 									case Instruction.BEGINPATH:
 										// [Instruction.BEGINPATH]
@@ -842,8 +898,11 @@ try{
 									break;
 									case Instruction.LINETO:
 										// [Instruction.LINETO, x, y]
+										/*
 										var pt = this.pp(arr[i][1], arr[i][2]);
 										ctx.lineTo(pt.x, pt.y);
+										*/
+										ctx.lineTo(arr[i][1], arr[i][2]);
 									break;
 									case Instruction.LINEWIDTH:
 										// [Instruction.LINEWIDTH, val]
@@ -855,8 +914,11 @@ try{
 									break;
 									case Instruction.MOVETO:
 										// [Instruction.MOVETO, x, y]
+										/*
 										var pt = this.pp(arr[i][1], arr[i][2]);
 										ctx.moveTo(pt.x, pt.y);
+										*/
+										ctx.moveTo(arr[i][1], arr[i][2]);
 									break;
 									case Instruction.QUADRATICCURVETO:
 										// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
@@ -887,7 +949,7 @@ try{
 										ctx.font = this.font;
 										ctx.fillStyle = this.graphics.compileStyle(this.textColor);
 										ctx.textAlign = this.autoSize;
-									
+										
 										/**
 										 * This part needs mas work. Not the proper way to wrap text
 										 */
@@ -911,6 +973,9 @@ try{
 										}
 									break;
 								}
+								
+								//this._source.setAttribute("style", "display:block; border:1px solid #ddf;");
+								//document.body.appendChild(this._source);
 							} else {
 								eval(arr[i]);
 							}
@@ -921,6 +986,36 @@ try{
 					}
 				} else {
 					// just draw the existing DisplayObject
+					if(this._source.height > 0 && this._source.width > 0) {
+						// TODO m11 through m22 will need to be used for transformation changes.
+						var m11,m12,m21,m22,x,y;
+						m11 = this.absScaleX;
+						m12 = 0;
+						m21 = 0;
+						m22 = this.absScaleY;
+						x = this.x;// - this._sourceOffset.x;
+						y = this.y;// - this._sourceOffset.y;
+
+						
+						if(this.parent) {
+							// incorporate parent's rotation
+							var dx = this.x;// + this.parent.absScaleX;
+							var dy = this.y;// + this.parent.absScaleY;
+							var ld2p = Math.sqrt(dx*dx + dy*dy); // local
+							var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
+							var latan2 = Math.atan2(dy, dx); // local atan2 rads
+							
+							x = this.parent.absX + Math.cos(latan2 + gang) * ld2p;				
+							y = this.parent.absY + Math.sin(latan2 + gang) * ld2p;
+						}
+						
+						// TRANSFORMS WILL RELY ON MAKING SURE ROTATE IS IN THE SETTRANSFORM FUNCTION
+						_f.stage.ctx.save();
+						_f.stage.ctx.setTransform(m11,m12,m21,m22,x,y);
+						_f.stage.ctx.rotate(this.absRotation * Math.PI / 180);
+						_f.stage.ctx.drawImage(this._source, 0-this._sourceOffset.x, 0-this._sourceOffset.y);
+						_f.stage.ctx.restore();
+					}
 				}
 				
 				try {
@@ -952,25 +1047,44 @@ try{
 					
 					/**
 					 * allows the user to set a flag which shows the origin (0, 0) by
-					 * representation of a small red X
+					 * representation of a small black +
 					 *
-					 * CHANGE TO BLACK +
 					 *
 					 */
 					if(c.drawOrigin) {
 						var ctx = stage.ctx;
+						var size = 3;
+
+						ctx.globalCompositeOperation = "xor";
 						ctx.lineWidth = 1;
-						ctx.strokeStyle = "rgb(255,0,0)";
+						ctx.strokeStyle = "rgb(0,0,0)";
 						ctx.beginPath();
-						ctx.moveTo(this.absX - 5, this.absY - 5);
-						ctx.lineTo(this.absX + 5, this.absY + 5);
-						ctx.moveTo(this.absX - 5, this.absY + 5);
-						ctx.lineTo(this.absX + 5, this.absY - 5);
+						ctx.moveTo(this.absX, this.absY - size);
+						ctx.lineTo(this.absX, this.absY + size);
+						ctx.moveTo(this.absX - size, this.absY);
+						ctx.lineTo(this.absX + size, this.absY);
 						ctx.stroke();
+						ctx.globalCompositeOperation = "source-over";
 					}
 				}
 			}
 		}
+	}
+	com.flanvas.display.DisplayObject.prototype.getBounds = function() {
+		var r = new Rectangle(0, 0, 0, 0);
+
+		if(this.graphics._points) {
+			for(var p = 0; p < this.graphics._points.length; ++p) {
+				var pt = this.graphics._points[p];
+				var rp = this.pp(pt.x, pt.y);
+				if(rp.x - this.absX < r.x) r.x = rp.x - this.absX;
+				if(rp.x - this.absX > r.width) r.width = rp.x - this.absX;
+				if(rp.y - self.absY < r.y) r.y = rp.y - self.absY;
+				if(rp.y - self.absY > r.height) r.height = rp.y - self.absY;
+			}
+		}
+
+		return r;
 	}
 	com.flanvas.display.DisplayObject.prototype.globalToLocal = function(point) {
 		if(!(point instanceof Point)) throw new ArgumentError("A Point is required.");
@@ -1114,22 +1228,22 @@ try{
 	com.flanvas.display.InteractiveObject.prototype._construct = function() {
 		this._is_mouse_in_path = false;
 		
-		var ptr = this;
+		var self = this;
 		this.addEventListener(FocusEvent.FOCUS_IN, function(event) {});
 		this.addEventListener(FocusEvent.FOCUS_OUT, function(event) {});
 		this.addEventListener(MouseEvent.MOUSE_DOWN, function(event) {
-			ptr._last_mouse_down_time = Utils.getTimer();
+			self._last_mouse_down_time = Utils.getTimer();
 		});
 		this.addEventListener(MouseEvent.MOUSE_UP, function(event) {
-			if(ptr._last_mouse_down_time + 200 > Utils.getTimer()) ptr.dispatchEvent(new MouseEvent(MouseEvent.CLICK, true, false, this.mouseX, this.mouseY));
+			if(self._last_mouse_down_time + 200 > Utils.getTimer()) self.dispatchEvent(new MouseEvent(MouseEvent.CLICK, true, false, this.mouseX, this.mouseY));
 		});
 		this.addEventListener(MouseEvent.ROLL_OUT, function(event) {
-			if(ptr.buttonMode && ptr.useHandCursor) {
+			if(self.buttonMode && self.useHandCursor) {
 				document.body.style.cursor = 'default';
 			}
 		});
 		this.addEventListener(MouseEvent.ROLL_OVER, function(event) {
-			if(ptr.buttonMode && ptr.useHandCursor) {
+			if(self.buttonMode && self.useHandCursor) {
 				document.body.style.cursor = 'pointer';
 			}
 		});
@@ -1322,16 +1436,16 @@ try{
 		
 		this.graphics.instruction([Instruction.TEXTFIELD]);
 		
-		var ptr = this;
+		var self = this;
 		this.addEventListener(com.flanvas.events.FocusEvent.FOCUS_IN, function(event) {
-			if(ptr.type == com.flanvas.text.TextFieldType.INPUT) {
-				ptr.addEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, ptr.captureKey);
-				ptr.activateCursor();
+			if(self.type == com.flanvas.text.TextFieldType.INPUT) {
+				self.addEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, self.captureKey);
+				self.activateCursor();
 			}
 		});
 		this.addEventListener(com.flanvas.events.FocusEvent.FOCUS_OUT, function(event) {
-			ptr.removeEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, ptr.captureKey);
-			ptr.activateCursor(false);
+			self.removeEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, self.captureKey);
+			self.activateCursor(false);
 		});
 		this.addEventListener(com.flanvas.events.MouseEvent.ROLL_OUT, function(event) {
 			document.body.style.cursor = 'default';
@@ -1407,8 +1521,8 @@ try{
 		
 		if(this.type == TextFieldType.INPUT) {
 			if(bool) {
-				var ptr = this;
-				this._activate_cursor_interval_id = setInterval(function(){ptr.cursorVisibilityToggle()}, 500);
+				var self = this;
+				this._activate_cursor_interval_id = setInterval(function(){self.cursorVisibilityToggle()}, 500);
 			} else {
 				this._cursor_visible = false;
 			}
@@ -1418,15 +1532,15 @@ try{
 		this.text = this._text.concat([str]);
 	}
 	com.flanvas.text.TextField.prototype.captureKey = function(event) {
-		var ptr = this;
+		var self = this;
 		
 		var nonMacCopy = ((com.flanvas.system.Capabilities.os.toLowerCase().indexOf('mac') < 0) && event.controlKey && !commandKey);
 		var macCopy = ((com.flanvas.system.Capabilities.os.toLowerCase().indexOf('mac') > -1) && event.commandKey && !event.controlKey);
 		
 		function insertTextAt(index, str) {
-			ptr.text = ptr.text.substr(0, index) + str + ptr.text.substr(index);
-			var c = ptr.caretIndex + str.length;
-			ptr.setSelection(c, c);
+			self.text = self.text.substr(0, index) + str + self.text.substr(index);
+			var c = self.caretIndex + str.length;
+			self.setSelection(c, c);
 		}
 		
 		switch(event.keyCode) {
@@ -1520,7 +1634,7 @@ try{
 			}
 		});
 		this.addEventListener(Event.REMOVED, function(event) {
-			if(ptr.stage) ptr.dispatchEvent(new Event(Event.REMOVED_FROM_STAGE));
+			if(self.stage) self.dispatchEvent(new Event(Event.REMOVED_FROM_STAGE));
 		});
 		this.addEventListener(Event.REMOVED_FROM_STAGE, function(event) {
 			for(var i = 0; i < event.target.numChildren; ++i) {
@@ -1809,6 +1923,8 @@ try{
 		} else {
 			this._data.push(val);
 		}
+
+		if(this.displayObject) this.displayObject.invalidate();
 	}
 	Graphics.prototype.lineCap = function(val) {
 		if(val === undefined) throw new ArgumentError("you must specify a value");
@@ -2069,30 +2185,30 @@ try{
 	}
 	com.flanvas.net.URLLoader.extend(com.flanvas.events.EventDispatcher);
 	com.flanvas.net.URLLoader.prototype.load = function(resource) {
-		var ptr = this;
+		var self = this;
 		var onReadyStateChange = function() {
 			if(this.readyState == 4) {
-				if(this.reponseXML) ptr._data = this.responseXML;
-				else if(this.responseText) ptr._data = this.responseText
-				else if(this.responseBody) ptr._data = this.responseBody;
+				if(this.reponseXML) self._data = this.responseXML;
+				else if(this.responseText) self._data = this.responseText
+				else if(this.responseBody) self._data = this.responseBody;
 				
 				var type = Utils.stripContentType(this);
 				switch(type) {
 					case 'image/svg':
 					case 'image/svg+xml':
 					case 'text/xml':
-						ptr._dataFormat = com.flanvas.net.URLLoaderDataFormat.TEXT;
+						self._dataFormat = com.flanvas.net.URLLoaderDataFormat.TEXT;
 						if(this.responseText) {
 							// data came in as text, but needs to be xml
-							ptr._data = Utils.strToXml(this.responseText);
+							self._data = Utils.strToXml(this.responseText);
 
 						}
 					break;
 					default:
-						ptr._dataFormat = type;
+						self._dataFormat = type;
 					break;
 				}
-				ptr.dispatchEvent(new Event(Event.COMPLETE));
+				self.dispatchEvent(new Event(Event.COMPLETE));
 			}
 		}
 		
@@ -2132,16 +2248,16 @@ try{
 	LoaderInfo.prototype.load = function(request) {
 		this._loader_url = request.url;
 		
-		var ptr = this;
+		var self = this;
 		var onReadyStateChange = function() {
 			if(this.readyState == 4) {
-				ptr._content_type = Utils.stripContentType(this);
-				switch(ptr.contentType) {
+				self._content_type = Utils.stripContentType(this);
+				switch(self.contentType) {
 					case 'text/html;charset=utf-8':
-						var url = String(ptr._loader_url);
+						var url = String(self._loader_url);
 						switch(url.substr(url.lastIndexOf('.'))) {
 							case '.svg':
-								ptr.handleSvg(this);
+								self.handleSvg(this);
 							break;
 						}
 					break;
@@ -2157,17 +2273,17 @@ try{
 							
 							var bmp = new Bitmap(bmpd);
 							
-							ptr._content = bmp;
-							ptr.loader.process();
-							ptr.dispatchEvent(new Event(Event.COMPLETE));
+							self._content = bmp;
+							self.loader.process();
+							self.dispatchEvent(new Event(Event.COMPLETE));
 						}
 						img.src = request.url;
 					break;
 					case 'image/svg+xml':
-						ptr.handleSvg(this);
+						self.handleSvg(this);
 						break;
 					default:
-						throw new Error('Not sure what to do with content-type of ' + ptr.contentType);
+						throw new Error('Not sure what to do with content-type of ' + self.contentType);
 					break;
 				}
 			}
@@ -2325,7 +2441,7 @@ try{
 	Svg.prototype.parseXml = function(xml) {
 		// because this function gets called out of scope, it needs it's own try/catch
 		try {
-			var ptr = this;
+			var self = this;
 			var control_Points = [];
 			
 			parse_loop:
@@ -2341,14 +2457,14 @@ try{
 					if(node.hasAttribute('instance-name')) {
 						instance_name = node.attributes.getNamedItem('instance-name').value;
 						
-						if(node instanceof SVGSVGElement) ptr.svgInstanceName = instance_name;
+						if(node instanceof SVGSVGElement) self.svgInstanceName = instance_name;
 					}
 				}
 				
-				if(ptr.svgInstanceName && !(node instanceof SVGSVGElement)) {
+				if(self.svgInstanceName && !(node instanceof SVGSVGElement)) {
 					var nam = '';
 					if(instance_name) nam = instance_name;
-					instance_name = ptr.svgInstanceName + '.' + nam;
+					instance_name = self.svgInstanceName + '.' + nam;
 				}
 				
 				switch(node.nodeName) {
@@ -2377,7 +2493,7 @@ try{
 						o.graphics.fill();
 						if(stroke.width) o.graphics.stroke();
 						
-						ptr.addChildAtPath(o, instance_name);
+						self.addChildAtPath(o, instance_name);
 					break;
 					case 'defs':
 						//
@@ -2404,7 +2520,7 @@ try{
 						if(fill) o.graphics.fill();
 						if(stroke.width) o.graphics.stroke();
 						
-						ptr.addChildAtPath(o, instance_name);
+						self.addChildAtPath(o, instance_name);
 					break;
 					case 'g':
 						this.parseXml(node);
@@ -2434,8 +2550,8 @@ try{
 						o.graphics.lineTo(x2 - x1, y2 - y1);
 						if(stroke.width) o.graphics.stroke();
 						
-						ptr.addChildAtPath(o, instance_name);
-						//ptr.addChild(o);
+						self.addChildAtPath(o, instance_name);
+						//self.addChild(o);
 					break;
 					case 'linearGradient':
 						var arr = [];
@@ -2446,7 +2562,7 @@ try{
 						var y1 = node.attributes.getNamedItem("y1").value;
 						var y2 = node.attributes.getNamedItem("y2").value;
 						
-						//ptr._instructions.push('var ' + id + ' = ctx.createLinearGradient('+x1+','+y1+','+x2+','+y2+');');
+						//self._instructions.push('var ' + id + ' = ctx.createLinearGradient('+x1+','+y1+','+x2+','+y2+');');
 						arr.push('var ' + id + ' = ctx.createLinearGradient('+x1+','+y1+','+x2+','+y2+')');
 						//arr.push("createLinearGradient('"+id+"',"+x1+","+y1+","+x2+","+y2+");");
 						
@@ -2457,7 +2573,7 @@ try{
 									var pos = stope.attributes.getNamedItem('offset').value;
 									var color = String(stope.attributes.getNamedItem('style').value);
 									color = color.replace('stop-color:', '');
-									//ptr._instructions.push(id + ".addColorStop("+pos+",'"+color+"');");
+									//self._instructions.push(id + ".addColorStop("+pos+",'"+color+"');");
 									//arr.push("addColorStop('"+id+"',"+pos+",'"+color+"');");
 									arr.push(id + ".addColorStop("+pos+",'"+color+"');");
 								break;
@@ -2640,8 +2756,8 @@ try{
 						o.graphics.fill();
 						if(stroke.width) o.graphics.stroke();
 						
-						ptr.addChildAtPath(o, instance_name);
-						//ptr.addChild(o);
+						self.addChildAtPath(o, instance_name);
+						//self.addChild(o);
 					break;
 					case 'polygon':
 						// <polygon fill="url(#SVGID_2_)" stroke="#000000" points="76.785,169.127 48.016,154.937 20.017,170.59 24.623,138.844 
@@ -2675,8 +2791,8 @@ try{
 						if(stroke) o.graphics.stroke();
 						if(fill) o.graphics.fill();
 						
-						ptr.addChildAtPath(o, instance_name);
-						//ptr.addChild(o);
+						self.addChildAtPath(o, instance_name);
+						//self.addChild(o);
 					break;
 					case 'polyline':
 						//var dashArray;
@@ -2714,7 +2830,7 @@ try{
 						if(fill) o.graphics.fill();
 						if(stroke.width) o.graphics.stroke();
 						
-						ptr.addChildAtPath(o, instance_name);
+						self.addChildAtPath(o, instance_name);
 					break;
 					case 'radialGradient':
 						var arr = [];
@@ -2744,7 +2860,7 @@ try{
 							gt = gt.split(', ');
 						}
 						
-						//ptr._instructions.push('var ' + id + ' = ctx.createRadialGradient('+x1+','+y1+','+r1+','+x2+','+y2+','+r2+');');
+						//self._instructions.push('var ' + id + ' = ctx.createRadialGradient('+x1+','+y1+','+r1+','+x2+','+y2+','+r2+');');
 						//o.graphics.createRadialGradient(id, x1, y1, r1, x2, y2, r2);
 						//arr.push("o.graphics.createRadialGradient('"+id+"',"+x1+","+y1+","+r1+","+x2+","+y2+","+r2+");");
 						arr.push('var ' + id + ' = ctx.createRadialGradient('+x1+','+y1+','+r1+','+x2+','+y2+','+r2+');');
@@ -2756,7 +2872,7 @@ try{
 									var pos = stope.attributes.getNamedItem('offset').value;
 									var color = stope.attributes.getNamedItem('style').value;
 									color = color.replace('stop-color:', '');
-									//ptr._instructions.push(id + ".addColorStop("+pos+",'"+color+"');");
+									//self._instructions.push(id + ".addColorStop("+pos+",'"+color+"');");
 									//o.graphics.addColorStop(id, pos, color);
 									//arr.push("o.graphics.addColorStop('"+id+"',"+pos+",'"+color+"');");
 									arr.push(id + ".addColorStop("+pos+",'"+color+"');");
@@ -2790,7 +2906,7 @@ try{
 						if(fill) o.graphics.fill();
 						if(stroke) o.graphics.stroke();
 						
-						ptr.addChildAtPath(o, instance_name);
+						self.addChildAtPath(o, instance_name);
 					break;
 					case 'svg':
 						if(instance_name) {
@@ -2803,7 +2919,7 @@ try{
 							o.y = 0 - vb[1];
 							this.addChildAtPath(o, instance_name);
 						}
-						ptr.parseXml(node);
+						self.parseXml(node);
 					break;
 					case 'text':
 						// <text instance-name="fullNameTxt" transform="matrix(1 0 0 1 63.5342 21.1387)" fill="#464646" font-family="'Arial-BoldMT'" font-size="12">{fullNameTxt}</text>
@@ -2840,7 +2956,7 @@ try{
 							}
 						}
 						
-						ptr.addChildAtPath(t, instance_name);
+						self.addChildAtPath(t, instance_name);
 					break;
 					default:
 						if(String(node.nodeName).substr(0, 1) != "#") throw new Error("no type match for: " + node.nodeName);
@@ -3087,7 +3203,7 @@ try{
 		var avg = this.throttleAverage() || 0;
 		if(_f.stage) {
 			if(Utils.getTimer() > this._last_time + (1000 / (_f.stage.fps + avg * 2))) {
-				if(_f.traceDiv) if(_f.clearTraceOnFrame) trace("", true);
+				//if(_f.traceDiv && _f.clearTraceOnFrame) trace("", true);
 				this.dispatchEvent(new Event(Event.ENTER_FRAME));
 				
 				this._fps = Number(1000 / (Utils.getTimer() - this._last_time));
@@ -3263,7 +3379,7 @@ try{
 			this.keyPressHandler = function(event) {
 				event.stopPropagation();
 				event.preventDefault();
-				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, ptr._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, self._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
 			}
 
 			document.addEventListener('click', function(event) {
@@ -3372,7 +3488,7 @@ try{
 		this._instance_log = [];
 		this._stage = undefined;
 		
-		this.clearTraceOnFrame = true;
+		//this.clearTraceOnFrame = true;
 		this.intervalManager = new IntervalManager();
 		this.traceDiv = undefined;
 		this.traceDraw = false;
@@ -3479,7 +3595,7 @@ try{
 		
 		doc.open("GET", url, true);
 		
-		var ptr = this;
+		var self = this;
 		doc.onreadystatechange = func;
 		
 		doc.send(null);
@@ -3586,8 +3702,10 @@ try{
 		
 		return str.replace(/'/g,'').replace(/\n|\r|\v|\t|\f|\0/g,'');
 	}
-	Utils.virtualContext = function() {
-		return document.createElement('canvas').getContext('2d');
+	Utils.virtualContext = function(ctx) {
+		if(ctx === undefined) ctx = true;
+		if(ctx) return document.createElement('canvas').getContext('2d');
+		return document.createElement('canvas');
 	}
 	
 	/**
@@ -3623,9 +3741,10 @@ try{
 	var stage = new com.flanvas.display.Stage();
 	_f.setStage(stage);
 	
-	function trace(param, clear) {
+	/*
+	function trace() {
 		try {
-			console.log(param);
+			console.log(arguments);
 		} catch(e) {
 			if(_f.traceDiv) {
 				if(clear) {
@@ -3635,6 +3754,18 @@ try{
 			} else {
 				//alert(param);
 			}
+		}
+	}
+	*/
+	function trace() {
+		if(console) console.log.apply(console, arguments);
+		else {
+			var str = "";
+			for(var i = 0; i < arguments.length; ++i) {
+				str += arguments[i];
+				if(i != arguments.length - 1) str += ", "; 
+			}
+			alert(str);
 		}
 	}
 } catch(e) {
