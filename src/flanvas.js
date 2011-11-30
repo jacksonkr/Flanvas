@@ -550,6 +550,11 @@ try{
 	}
 	com.flanvas.display.DisplayObject.prototype._construct = function() {
 		this._alpha = 1.0;
+		/**
+		 * stores the Rect which is the absloute bounds of the box. 
+		 * This box ends when there is no longer visual data for the object.
+		*/
+		this._boundingBox;
 		this._filters = [];
 		this._last_mouse_down_time = undefined;
 		this._mask = undefined;
@@ -568,6 +573,7 @@ try{
 		this._stage = undefined;
 		this._scale_x = 1.0;
 		this._scale_y = 1.0;
+		this._show_bounding_box = false;
 		this._show_origin = false;
 		/**
 		 * _source holds the source context (canvas element) for the original drawing of this item.
@@ -581,7 +587,8 @@ try{
 
 
 		this._source = Utils.virtualContext(false);
-		this._sourceOffset = {x:0, y:0};
+		this._boundingBox = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
+		this._sourceOffset = {x:Infinity, y:Infinity};
 		
 		this.parent = undefined;
 		this.visible = true;
@@ -649,6 +656,13 @@ try{
 			
 			self._alpha = val;
 			self.invalidate();
+		});
+		this.__defineGetter__('drawBoundingBox', function() {
+			return this._show_bounding_box;
+		});
+		this.__defineSetter__('drawBoundingBox', function(bool) {
+			this._show_bounding_box = bool;
+			this.invalidate();
 		});
 		/**
 		 * This allows the developer / designer to see the origin
@@ -740,14 +754,14 @@ try{
 			return this._x;
 		});
 		this.__defineSetter__('x', function(val) {
-			self._x = val;
+			self._x = +val;
 		});
 		this.__defineGetter__('y', function() {
 			if(this.parent) return this._y * this.parent.absScaleY;
 			return this._y;
 		});
 		this.__defineSetter__('y', function(val) {
-			self._y = val;
+			self._y = +val;
 		});
 		this.__defineGetter__('width', function() {
 			var r = new Rectangle(0, 0, 0, 0);
@@ -812,6 +826,7 @@ try{
 		});
 
 		//this.drawOrigin = true;
+		this.drawBoundingBox = true;
 	}
 	com.flanvas.display.DisplayObject.extend(com.flanvas.events.EventDispatcher);
 	com.flanvas.display.DisplayObject.prototype.drawSelf = function() {
@@ -844,22 +859,20 @@ try{
 					for(var i in arr) {
 						try {
 							if(arr[i] instanceof Array) {
+								this.updateSourceOffset(arr[i]); // do this incase an item has multiple draw instructions
+								
 								var cmd = arr[i][0];
-							
 								switch(cmd) {
 									case Instruction.ARC:
-										// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
-										/*
-										// before using transforms
-										var pt = this.pp(arr[i][1], arr[i][2]);
-										ctx.arc(pt.x, pt.y, arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
-										*/
-
 										// offset.x < x + radius
-										if(this._sourceOffset.x < arr[i][1] + arr[i][3]) this._sourceOffset.x = arr[i][1] + arr[i][3];
-										if(this._sourceOffset.y < arr[i][2] + arr[i][3]) this._sourceOffset.y = arr[i][2] + arr[i][3];
-										
-										ctx.arc(this._sourceOffset.x + arr[i][1], this._sourceOffset.y + arr[i][2], arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
+										var radius = arr[i][3];
+
+										// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
+
+										// before using transforms
+										//var pt = this.pp(arr[i][1], arr[i][2]);
+										ctx.arc(0 + radius, 0 + radius, radius, arr[i][4], arr[i][5], arr[i][6]);
+										//ctx.arc(this._sourceOffset.x + arr[i][1], this._sourceOffset.y + arr[i][2], arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
 									break;
 									case Instruction.BEGINPATH:
 										// [Instruction.BEGINPATH]
@@ -867,10 +880,15 @@ try{
 									break;
 									case Instruction.BEZIERCURVETO:
 										// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
+										//if(this._sourceOffset.x < arr[i][5]) this._sourceOffset.x = arr[i][5];
+										//if(this._sourceOffset.y < arr[i][6]) this._sourceOffset.y = arr[i][6];
+
 										var cp1 = this.pp(arr[i][1], arr[i][2]);
 										var cp2 = this.pp(arr[i][3], arr[i][4]);
 										var pt = this.pp(arr[i][5], arr[i][6]);
 										ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, pt.x, pt.y);
+
+										//ctx.bezierCurveTo(arr[i][1], arr[i][2], arr[i][3], arr[i][4], arr[i][5], arr[i][6]);
 									break;
 									case Instruction.CLIP:
 										// [Instruction.CLIP]
@@ -898,11 +916,11 @@ try{
 									break;
 									case Instruction.LINETO:
 										// [Instruction.LINETO, x, y]
-										/*
-										var pt = this.pp(arr[i][1], arr[i][2]);
-										ctx.lineTo(pt.x, pt.y);
-										*/
-										ctx.lineTo(arr[i][1], arr[i][2]);
+										//var pt = this.pp(arr[i][1], arr[i][2]);
+										//ctx.lineTo(pt.x, pt.y);
+										
+										//ctx.lineTo(arr[i][1], arr[i][2]);
+										ctx.lineTo(arr[i][1] - this._sourceOffset.x, arr[i][2] - this._sourceOffset.y);
 									break;
 									case Instruction.LINEWIDTH:
 										// [Instruction.LINEWIDTH, val]
@@ -914,11 +932,11 @@ try{
 									break;
 									case Instruction.MOVETO:
 										// [Instruction.MOVETO, x, y]
-										/*
-										var pt = this.pp(arr[i][1], arr[i][2]);
-										ctx.moveTo(pt.x, pt.y);
-										*/
-										ctx.moveTo(arr[i][1], arr[i][2]);
+										
+										//var pt = this.pp(arr[i][1], arr[i][2]);
+										//ctx.moveTo(pt.x, pt.y);
+
+										ctx.moveTo(arr[i][1] - this._sourceOffset.x, arr[i][2] - this._sourceOffset.y);
 									break;
 									case Instruction.QUADRATICCURVETO:
 										// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
@@ -974,8 +992,8 @@ try{
 									break;
 								}
 								
-								//this._source.setAttribute("style", "display:block; border:1px solid #ddf;");
-								//document.body.appendChild(this._source);
+								this._source.setAttribute("style", "display:block; border:1px solid #ddf;");
+								document.body.appendChild(this._source);
 							} else {
 								eval(arr[i]);
 							}
@@ -1009,11 +1027,10 @@ try{
 							y = this.parent.absY + Math.sin(latan2 + gang) * ld2p;
 						}
 						
-						// TRANSFORMS WILL RELY ON MAKING SURE ROTATE IS IN THE SETTRANSFORM FUNCTION
 						_f.stage.ctx.save();
 						_f.stage.ctx.setTransform(m11,m12,m21,m22,x,y);
 						_f.stage.ctx.rotate(this.absRotation * Math.PI / 180);
-						_f.stage.ctx.drawImage(this._source, 0-this._sourceOffset.x, 0-this._sourceOffset.y);
+						_f.stage.ctx.drawImage(this._source, this._sourceOffset.x, this._sourceOffset.y);
 						_f.stage.ctx.restore();
 					}
 				}
@@ -1031,41 +1048,63 @@ try{
 				ctx.shadowColor = "rgba(0,0,0,0)";
 			}
 			
-			
-			
-			/**
-			 * continue the drawing command to all the children
-			 * AFTER this object has drawn. This way children will 
-			 * be displayed over the top of the parent.
-			 * 
-			 * only applies to DisplayObjectContainer subclasses.
-			 */
-			if(this.numChildren && this.visible) {
-				for(var i = 0; i < this.numChildren; ++i) {
-					var c = this.getChildAt(i);
-					c.drawSelf();
-					
-					/**
-					 * allows the user to set a flag which shows the origin (0, 0) by
-					 * representation of a small black +
-					 *
-					 *
-					 */
-					if(c.drawOrigin) {
-						var ctx = stage.ctx;
-						var size = 3;
+			if(this.visible) {
+				/**
+				 * continue the drawing command to all the children
+				 * AFTER this object has drawn. This way children will 
+				 * be displayed over the top of the parent.
+				 * 
+				 * only applies to DisplayObjectContainer subclasses.
+				 */
+				for(var i = 0; i < this.numChildren; ++i) this.getChildAt(i).drawSelf();
 
-						ctx.globalCompositeOperation = "xor";
-						ctx.lineWidth = 1;
-						ctx.strokeStyle = "rgb(0,0,0)";
-						ctx.beginPath();
-						ctx.moveTo(this.absX, this.absY - size);
-						ctx.lineTo(this.absX, this.absY + size);
-						ctx.moveTo(this.absX - size, this.absY);
-						ctx.lineTo(this.absX + size, this.absY);
-						ctx.stroke();
-						ctx.globalCompositeOperation = "source-over";
-					}
+				var ctx = stage.ctx;
+				
+				/** 
+				 * allows the developer to set a flag which shows the bounding box by
+				 * representation of red lines resembline a box.
+				 */
+				if(this.drawBoundingBox) this.updateBoundingBox();
+				if(this._boundingBox.x < Infinity && this._boundingBox.y < Infinity) {
+					var size = 1;
+
+					var d = [];
+					var r = [];
+					var xx, yy, xxh, yyw;
+
+					xx = this.absX + this._boundingBox.x;
+					yy = this.absY + this._boundingBox.y;
+					xxw = this.absX + this._boundingBox.x + this._boundingBox.width;
+					yyh = this.absY + this._boundingBox.y + this._boundingBox.height;
+
+					ctx.lineWidth = 1;
+					ctx.strokeStyle = "rgb(255,0,0)";
+					ctx.beginPath();
+					ctx.moveTo(xx, yy);
+					ctx.lineTo(xxw, yy);
+					ctx.lineTo(xxw, yyh);
+					ctx.lineTo(xx, yyh);
+					ctx.lineTo(xx, yy);
+					ctx.stroke();
+				}
+
+				/**
+				 * allows the developer to set a flag which shows the origin (0, 0) by
+				 * representation of a small black +
+				 */
+				if(this.drawOrigin) {
+					var size = 3;
+
+					ctx.globalCompositeOperation = "xor";
+					ctx.lineWidth = 1;
+					ctx.strokeStyle = "rgb(0,0,0)";
+					ctx.beginPath();
+					ctx.moveTo(this.absX, this.absY - size);
+					ctx.lineTo(this.absX, this.absY + size);
+					ctx.moveTo(this.absX - size, this.absY);
+					ctx.lineTo(this.absX + size, this.absY);
+					ctx.stroke();
+					ctx.globalCompositeOperation = "source-over";
 				}
 			}
 		}
@@ -1115,23 +1154,152 @@ try{
 			var ang, hyp, rads;
 		
 			rads = Math.atan2(y, x);
-			rads += o.rotation / 180 * Math.PI;
+			// this next line was commented out when rotation started using ctx.rotate
+			//rads += o.rotation / 180 * Math.PI;
 			
 			//hyp = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
 			// below is a little faster
 			hyp = Math.sqrt(x*x + y*y);
 			
-			x = hyp * Math.cos(rads) * o.scaleX;
-			y = hyp * Math.sin(rads) * o.scaleY;
+			to_x = hyp * Math.cos(rads) * o.scaleX;
+			to_y = hyp * Math.sin(rads) * o.scaleY;
 			
-			x += o.x;
-			y += o.y;
+			to_x += o.x;
+			to_y += o.y;
 			
 			o = o.parent;
 		}
 		
 		// move this to an array of [x,y] as it will be a bit faster
-		return {'x':x, 'y':y};
+		return {'x':to_x + this._sourceOffset.x, 'y':to_y + this._sourceOffset.y};
+	}
+	com.flanvas.display.DisplayObject.prototype.updateBoundingBox = function() {
+		this._boundingBox = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
+
+		for(var i = 0; i < this.graphics.data.length; ++i) {
+			var arr = this.graphics.data[i];
+			var cmd = arr[0];
+			switch(cmd) {
+				case Instruction.ARC:
+					// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
+					var x = arr[1];
+					var y = arr[2];
+					var radius = arr[3];
+					if(x - radius < this._boundingBox.x) this._boundingBox.x = x - radius;
+					if(y - radius < this._boundingBox.y) this._boundingBox.y = y - radius;
+					if(x + radius * 2 > this._boundingBox.width) this._boundingBox.width = x + radius * 2;
+					if(y + radius * 2 > this._boundingBox.height) this._boundingBox.height = y + radius * 2;
+				break;
+				case Instruction.BEGINPATH:
+					// [Instruction.BEGINPATH]
+				break;
+				case Instruction.BEZIERCURVETO:
+					// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
+				break;
+				case Instruction.LINECAP:
+					// [Instruction.LINECAP, val]
+				break;
+				case Instruction.LINEJOIN:
+					// [Instruction.LINEJOIN]
+				break;
+				break;
+				case Instruction.LINEWIDTH:
+					// [Instruction.LINEWIDTH, val]
+				break;
+				case Instruction.MITERLIMIT:
+					// [Instruction.MITERLIMIT, val]
+				break;
+				case Instruction.LINETO:
+					// [Instruction.LINETO, x, y]
+				case Instruction.MOVETO:
+				// [Instruction.MOVETO, x, y]
+					var x = arr[1];
+					var y = arr[2];
+					var d = Math.sqrt(x*x + y*y); // distance to point from 0,0
+					var r = Math.atan2(y, x) + (this.absRotation / 180 * Math.PI);// radians to the point from 0,0
+
+					x = Math.cos(r) * d;
+					y = Math.sin(r) * d;
+					
+					if(x < this._boundingBox.x) this._boundingBox.x = x;
+					if(y < this._boundingBox.y) this._boundingBox.y = y;
+					if(Math.abs(x) > this._boundingBox.width) this._boundingBox.width = Math.abs(x);
+					if(Math.abs(y) > this._boundingBox.height) this._boundingBox.height = Math.abs(y);
+				break;
+				case Instruction.QUADRATICCURVETO:
+					// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
+				break;
+				case Instruction.STROKE:
+					// [Instruction.STROKE]
+				break;
+				case Instruction.STROKESTYLE:
+					// [Instruction.STROKESTYLE, val]
+				break;
+				case Instruction.TEXTFIELD:
+					// [Instruction.TEXTFIELD]
+				break;
+			}
+		}
+					
+					if(this.name == "box1") trace(this._boundingBox.x, this._boundingBox.y);
+	}
+	/**
+	 * This updates the offset for drawing (different than the origin).
+	 * This is needed since a circle is drawn from the center so you have to set a drawing off set of the radius.
+	 * The same will need to be done for awkward shapes. Anything that has a drawing center other than top-left
+	 */
+	com.flanvas.display.DisplayObject.prototype.updateSourceOffset = function(arr) {
+		var cmd = arr[0];
+		switch(cmd) {
+			case Instruction.ARC:
+				// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
+				var x = arr[1], y = arr[2], radius = arr[3];
+				if(x - radius < this._sourceOffset.x) this._sourceOffset.x = x - radius;
+				if(y - radius < this._sourceOffset.y) this._sourceOffset.y = y - radius;
+			break;
+			case Instruction.BEGINPATH:
+				// [Instruction.BEGINPATH]
+			break;
+			case Instruction.BEZIERCURVETO:
+				// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
+			break;
+			case Instruction.LINECAP:
+				// [Instruction.LINECAP, val]
+			break;
+			case Instruction.LINEJOIN:
+				// [Instruction.LINEJOIN]
+			break;
+			break;
+			case Instruction.LINEWIDTH:
+				// [Instruction.LINEWIDTH, val]
+			break;
+			case Instruction.MITERLIMIT:
+				// [Instruction.MITERLIMIT, val]
+			break;
+			case Instruction.LINETO:
+				// [Instruction.LINETO, x, y]
+			case Instruction.MOVETO:
+				// [Instruction.MOVETO, x, y]
+				var x = arr[1];
+				var y = arr[2];
+				if(x < this._sourceOffset.x) this._sourceOffset.x = x;
+				if(y < this._sourceOffset.y) this._sourceOffset.y = y;
+			break;
+			case Instruction.QUADRATICCURVETO:
+				// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
+			break;
+			case Instruction.STROKE:
+				// [Instruction.STROKE]
+			break;
+			case Instruction.STROKESTYLE:
+				// [Instruction.STROKESTYLE, val]
+			break;
+			case Instruction.TEXTFIELD:
+				// [Instruction.TEXTFIELD]
+			break;
+		}
+
+		//trace(arr, this._sourceOffset, this.x, this.y);
 	}
 	var DisplayObject = com.flanvas.display.DisplayObject;
 	
@@ -2392,6 +2560,7 @@ try{
 		return o;
 	}
 	Svg.prototype.addChildAtPath = function(child, path) {
+		child.invalidate();
 		if(path === undefined) return this.addChild(child);
 		
 		var arr = path.split(".");
@@ -2460,7 +2629,7 @@ try{
 						if(node instanceof SVGSVGElement) self.svgInstanceName = instance_name;
 					}
 				}
-				
+
 				if(self.svgInstanceName && !(node instanceof SVGSVGElement)) {
 					var nam = '';
 					if(instance_name) nam = instance_name;
@@ -2579,7 +2748,7 @@ try{
 								break;
 							}
 						}
-						
+
 						Graphics.registerGradient(id, arr);
 					break;
 					case 'path':
@@ -2618,19 +2787,20 @@ try{
 							// make an array of all the points and cast all points as numbers
 							var pt = String(String(d[k]).substr(1)).split(',');
 							for(var m = 0; m < pt.length; m++) {
-								if(isNaN(Number(pt[m]))) alert(pt[m]);
+								if(isNaN(+pt[m])) throw new Error("point is NaN. Svg->parseXML->'path'; " + pt[m]);
 								
-								pt[m] = Number(pt[m]);
+								pt[m] = +pt[m];
 							}
 							
-							// keep the last documented point handy
+							// keep the last documented point handy (for relative draw instructions)
 							var lp = o.graphics.points(-1)[0];
 							if(!lp) lp = new Point(0, 0);
 							
 							// keep the last document control point handy too
 							var lcp;
 							if(control_Points.length) lcp = control_Points[control_Points.length - 1];
-							
+
+							// Upper case is for a Absolute draw while lower case is for a relative draw (relative to the ending of the last draw, not the 0,0)
 							switch(code) {
 								// move to
 								case 'M':
@@ -2650,7 +2820,8 @@ try{
 									o.graphics.lineTo(L.x, L.y);
 								break;
 								case 'l':
-									o.graphics.lineTo(lp.x + pt[0], lp.y + pt[1]);
+									var l = this.pp(lp.x + pt[0], lp.y + pt[1]);
+									o.graphics.lineTo(l.x, l.y);
 								break;
 								// horizontal line to
 								case 'H':
@@ -2658,7 +2829,8 @@ try{
 									o.graphics.lineTo(L.x, lp.y);
 								break;
 								case 'h':
-									o.graphics.lineTo(lp.x + pt[0], lp.y);
+									var h = this.pp(lp.x + pt[0], lp.y);
+									o.graphics.lineTo(h.x, h.y);
 								break;
 								// vertical line to
 								case 'V':
@@ -2666,7 +2838,8 @@ try{
 									o.graphics.lineTo(lp.x, L.y);
 								break;
 								case 'v':
-									o.graphics.lineTo(lp.x, lp.y + pt[0]);
+									var v = this.pp(lp.x, lp.y + pt[0]);
+									o.graphics.lineTo(v.x, v.y);
 								break;
 								// curve to
 								case 'C':
@@ -2694,6 +2867,7 @@ try{
 									pt[3] = c1.y;
 									pt[4] = c2.x;
 									pt[5] = c2.y;
+									
 									//o.graphics.lineTo(pt[4], pt[5]);
 									o.graphics.bezierCurveTo(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]);
 									control_Points.push(c0);
@@ -2755,7 +2929,7 @@ try{
 						
 						o.graphics.fill();
 						if(stroke.width) o.graphics.stroke();
-						
+
 						self.addChildAtPath(o, instance_name);
 						//self.addChild(o);
 					break;
@@ -2780,11 +2954,14 @@ try{
 						
 						for(var set = 0; set < points.length; ++set) {
 							var pt = String(points[set]).split(',');
+							var x = +pt[0], y = +pt[1];
+
 							/**
 							 * the first point is a moveTo and the rest are lineTo
 							 */
-							if(set == 0) o.graphics.moveTo(pt[0], pt[1]);
-							else o.graphics.lineTo(pt[0], pt[1]);
+							if(set == 0) {
+								o.graphics.moveTo(x, y);
+							} else o.graphics.lineTo(x, y);
 						}
 						
 						o.graphics.closePath();
@@ -2792,6 +2969,7 @@ try{
 						if(fill) o.graphics.fill();
 						
 						self.addChildAtPath(o, instance_name);
+						trace("ATTACH");
 						//self.addChild(o);
 					break;
 					case 'polyline':
@@ -3705,7 +3883,12 @@ try{
 	Utils.virtualContext = function(ctx) {
 		if(ctx === undefined) ctx = true;
 		if(ctx) return document.createElement('canvas').getContext('2d');
-		return document.createElement('canvas');
+		var c = document.createElement('canvas');
+		
+		// this is just a dumb fix for now
+		c.setAttribute("height", 550);
+		c.setAttribute("widht", 400);
+		return c;
 	}
 	
 	/**

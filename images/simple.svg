@@ -9,6 +9,7 @@
 	 xml:space="preserve">
 <defs>
 </defs>
+<!--polygon fill="url(#SVGID_2_)" stroke="#000000" points="-100,-100 0,-100 0,0 -100,0"/-->
 <linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="17.0898" y1="23.083" x2="88.6932" y2="55.7435">
 	<stop  offset="0" style="stop-color:#FFFFFF"/>
 	<stop  offset="0.1042" style="stop-color:#FAFAFA"/>

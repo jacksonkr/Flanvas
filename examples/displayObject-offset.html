@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Flanvas - Draw Box</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	//_f.traceDiv = document.getElementById("trace");
+	//_f.clear_trace_on_frame = false;
+	//_f.trace_draw = true;
+	stage.canvas = document.getElementById('myCanvas');
+	stage.fps = 24;
+
+	var box0 = new Sprite();
+	box0.name = "box1";
+	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
+	box0.drawOrigin = true;
+	box0.graphics.beginFill(0x999999);
+	box0.graphics.drawRect(-75, -75, 50, 50);
+	box0.graphics.fill();
+	box0.x = 75;
+	box0.y = 75;
+	stage.addChild(box0);
+
+	var box1 = new Sprite();
+	box1.name = "box1";
+	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
+	box1.drawOrigin = true;
+	box1.graphics.beginFill(0x999999);
+	box1.graphics.drawRect(-50, -50, 50, 50);
+	box1.graphics.fill();
+	box1.x = 0;
+	box1.y = 60;
+	box0.addChild(box1);
+	
+	var box2 = new Sprite();
+	box2.name = "box2";
+	box2.drawOrigin = true;
+	box2.graphics.beginFill(0x999999);
+	box2.graphics.drawRect(-25, -25, 50, 50);
+	box2.graphics.endFill();
+	box2.x = 0;
+	box2.y = 60;
+	box1.addChild(box2);
+	
+	var box3 = new Sprite();
+	box3.name = "box3";
+	box3.drawOrigin = true;
+	box3.graphics.beginFill(0x999999);
+	box3.graphics.drawRect(0, 0, 50, 50);
+	box3.graphics.endFill();
+	box3.x = 0;
+	box3.y = 60;
+	box2.addChild(box3);
+
+	var box4 = new Sprite();
+	box4.name = "box4";
+	box4.drawOrigin = true;
+	box4.graphics.beginFill(0x999999);
+	box4.graphics.drawRect(25, 25, 50, 50);
+	box4.graphics.endFill();
+	box4.x = 0;
+	box4.y = 60;
+	box3.addChild(box4);
+	
+	var circ0 = new Sprite();
+	circ0.name = "circ0";
+	circ0.drawOrigin = true;
+	circ0.graphics.beginFill(0x999999);
+	circ0.graphics.drawCircle(-50, -50, 25);
+	circ0.graphics.endFill();
+	circ0.x = 150;
+	circ0.y = 75;
+	stage.addChild(circ0);
+
+	var circ1 = new Sprite();
+	circ1.name = "circ1";
+	circ1.drawOrigin = true;
+	circ1.graphics.beginFill(0x999999);
+	circ1.graphics.drawCircle(-25, -25, 25);
+	circ1.graphics.endFill();
+	circ1.x = 0;
+	circ1.y = 60;
+	circ0.addChild(circ1);
+	
+	var circ2 = new Sprite();
+	circ2.name = "circ2";
+	circ2.drawOrigin = true;
+	circ2.graphics.beginFill(0x999999);
+	circ2.graphics.drawCircle(0, 0, 25);
+	circ2.graphics.endFill();
+	circ2.x = 0;
+	circ2.y = 60;
+	circ1.addChild(circ2);
+	
+	var circ3 = new Sprite();
+	circ3.name = "circ3";
+	circ3.drawOrigin = true;
+	circ3.graphics.beginFill(0x999999);
+	circ3.graphics.drawCircle(25, 25, 25);
+	circ3.graphics.endFill();
+	circ3.x = 0;
+	circ3.y = 60;
+	circ2.addChild(circ3);
+	
+	var circ4 = new Sprite();
+	circ4.name = "circ4";
+	circ4.drawOrigin = true;
+	circ4.graphics.beginFill(0x999999);
+	circ4.graphics.drawCircle(50, 50, 25);
+	circ4.graphics.endFill();
+	circ4.x = 0;
+	circ4.y = 60;
+	circ3.addChild(circ4);
+
+	var box00 = new Sprite();
+	box00.name = "box1";
+	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
+	box00.drawOrigin = true;
+	box00.graphics.beginFill(0x999999);
+	//box00.graphics.drawRect(-75, -75, 50, 50);
+	box00.moveTo(-25, -25);
+	box00.lineTo(-75, -25);
+	box00.lineTo(-75, -75);
+	box00.lineTo(-25, -75);
+	box00.graphics.fill();
+	box00.x = 225;
+	box00.y = 75;
+	stage.addChild(box00);
+
+	var box11 = new Sprite();
+	box11.name = "box11";
+	//box11.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
+	box11.drawOrigin = true;
+	box11.graphics.beginFill(0x999999);
+	box11.graphics.drawRect(-50, -50, 50, 50);
+	box11.graphics.fill();
+	box11.x = 0;
+	box11.y = 60;
+	box00.addChild(box11);
+	
+	var box22 = new Sprite();
+	box22.name = "box22";
+	box22.drawOrigin = true;
+	box22.graphics.beginFill(0x999999);
+	box22.graphics.drawRect(-25, -25, 50, 50);
+	box22.graphics.endFill();
+	box22.x = 0;
+	box22.y = 60;
+	box11.addChild(box22);
+	
+	var box33 = new Sprite();
+	box33.name = "box33";
+	box33.drawOrigin = true;
+	box33.graphics.beginFill(0x999999);
+	box33.graphics.drawRect(0, 0, 50, 50);
+	box33.graphics.endFill();
+	box33.x = 0;
+	box33.y = 60;
+	box22.addChild(box33);
+
+	var box44 = new Sprite();
+	box44.name = "box44";
+	box44.drawOrigin = true;
+	box44.graphics.beginFill(0x999999);
+	box44.graphics.drawRect(25, 25, 50, 50);
+	box44.graphics.endFill();
+	box44.x = 0;
+	box44.y = 60;
+	box33.addChild(box44);
+}
+</script>
+</head>
+
+<body>
+
+<canvas id="myCanvas" width="550" height="400" style="position:relative; left:0; top:0;"></canvas>
+
+</body>
+</html>
