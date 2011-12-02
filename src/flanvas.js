@@ -84,7 +84,7 @@ try{
 			if(String(this.prototype.toString).replace(/^\s*|\s*$/g,'').indexOf("[native code]") >= 0) {
 				this.prototype.toString = function() {
 					// this.constructor.name is not bringing back anything :(
-					return "[Object " + this.constructor.name + "]";
+					return "[Object " + (this.constructor.name || "Object") + "]";
 				}
 			}
 		} catch(e) {
@@ -355,7 +355,7 @@ try{
 			if (agent.indexOf("chrome") > -1) {
 				arr.shift();
 			}
-			
+
 			arr.shift();
 			arr.shift();
 			arr.unshift(msg);
@@ -615,8 +615,6 @@ try{
 			return Number(this.scaleY);
 		});
 		this.__defineGetter__('absX', function() {
-			//trace(this.name)
-
 			var dx = this.x;// + this.parent.absScaleX;
 			if(this.parent) {
 				var dy = this.y;// + this.parent.absScaleY;
@@ -855,11 +853,11 @@ try{
 						this.filters[i].drawSelf();
 						if(_f.traceDraw) trace(this.filters[i]._instructions[j]);
 					}
-					
+
 					for(var i in arr) {
 						try {
 							if(arr[i] instanceof Array) {
-								this.updateSourceOffset(arr[i]); // do this incase an item has multiple draw instructions
+								this.updateSourceOffset(arr[i]); // this will take an object with multiple dras and still find the correct source offset
 								
 								var cmd = arr[i][0];
 								switch(cmd) {
@@ -920,7 +918,18 @@ try{
 										//ctx.lineTo(pt.x, pt.y);
 										
 										//ctx.lineTo(arr[i][1], arr[i][2]);
-										ctx.lineTo(arr[i][1] - this._sourceOffset.x, arr[i][2] - this._sourceOffset.y);
+
+										var x = arr[i][1];
+										var y = arr[i][2];
+
+										this.name == "boxu3" ? trace('l', x, y, this._sourceOffset) :0;
+
+										x -= this._sourceOffset.x;
+										y -= this._sourceOffset.y;
+
+										this.name == "boxu3" ? trace('l2', x, y) :0;
+
+										ctx.lineTo(x, y);
 									break;
 									case Instruction.LINEWIDTH:
 										// [Instruction.LINEWIDTH, val]
@@ -936,7 +945,20 @@ try{
 										//var pt = this.pp(arr[i][1], arr[i][2]);
 										//ctx.moveTo(pt.x, pt.y);
 
-										ctx.moveTo(arr[i][1] - this._sourceOffset.x, arr[i][2] - this._sourceOffset.y);
+										//ctx.moveTo(arr[i][1] - this._sourceOffset.x, arr[i][2] - this._sourceOffset.y);
+
+										var x = arr[i][1];
+										var y = arr[i][2];
+
+										//this.name == "boxu3" ? trace('m', x, y, this._sourceOffset) :0;
+										this.name == "boxu3" ? trace(x, this._sourceOffset, this._sourceOffset.x, x - this._sourceOffset.x) :0;
+
+										x -= this._sourceOffset.x;
+										y -= this._sourceOffset.y;
+
+										this.name == "boxu3" ? trace('m2', x, y) :0;
+
+										ctx.moveTo(x, y);
 									break;
 									case Instruction.QUADRATICCURVETO:
 										// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
@@ -1187,8 +1209,10 @@ try{
 					var radius = arr[3];
 					if(x - radius < this._boundingBox.x) this._boundingBox.x = x - radius;
 					if(y - radius < this._boundingBox.y) this._boundingBox.y = y - radius;
-					if(x + radius * 2 > this._boundingBox.width) this._boundingBox.width = x + radius * 2;
-					if(y + radius * 2 > this._boundingBox.height) this._boundingBox.height = y + radius * 2;
+					if(radius*2 > this._boundingBox.width) this._boundingBox.width = radius*2;
+					if(radius*2 > this._boundingBox.height) this._boundingBox.height = radius*2;
+
+					//if(this.name == "circ0") trace(x, y);
 				break;
 				case Instruction.BEGINPATH:
 					// [Instruction.BEGINPATH]
@@ -1212,7 +1236,7 @@ try{
 				case Instruction.LINETO:
 					// [Instruction.LINETO, x, y]
 				case Instruction.MOVETO:
-				// [Instruction.MOVETO, x, y]
+					// [Instruction.MOVETO, x, y]
 					var x = arr[1];
 					var y = arr[2];
 					var d = Math.sqrt(x*x + y*y); // distance to point from 0,0
@@ -1223,8 +1247,8 @@ try{
 					
 					if(x < this._boundingBox.x) this._boundingBox.x = x;
 					if(y < this._boundingBox.y) this._boundingBox.y = y;
-					if(Math.abs(x) > this._boundingBox.width) this._boundingBox.width = Math.abs(x);
-					if(Math.abs(y) > this._boundingBox.height) this._boundingBox.height = Math.abs(y);
+					//if(Math.abs(x) > this._boundingBox.width) this._boundingBox.width = Math.abs(x);
+					//if(Math.abs(y) > this._boundingBox.height) this._boundingBox.height = Math.abs(y);
 				break;
 				case Instruction.QUADRATICCURVETO:
 					// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
@@ -1240,8 +1264,20 @@ try{
 				break;
 			}
 		}
+
+		// find the longest lines inside the graphics to decide bounding box width and height
+		for(var i = 0; i < this.graphics._points.length; ++i) {
+			var pt = this.graphics._points[i];
+			var x = pt.x - this._sourceOffset.x;
+			var y = pt.y - this._sourceOffset.y;
+			var d = Math.sqrt(x*x + y*y); // distance to point from 0,0
+			var r = Math.atan2(y, x) + (this.absRotation / 180 * Math.PI);// radians to the point from 0,0
+			
+			if(Math.abs(Math.cos(r) * d) > this._boundingBox.width) this._boundingBox.width = Math.abs(Math.cos(r) * d);
+			if(Math.abs(Math.sin(r) * d) > this._boundingBox.height) this._boundingBox.height = Math.abs(Math.sin(r) * d);
 					
-					if(this.name == "box1") trace(this._boundingBox.x, this._boundingBox.y);
+			//if(this.name == "box0") trace(this._sourceOffset);
+		}
 	}
 	/**
 	 * This updates the offset for drawing (different than the origin).
@@ -1282,8 +1318,15 @@ try{
 				// [Instruction.MOVETO, x, y]
 				var x = arr[1];
 				var y = arr[2];
+
 				if(x < this._sourceOffset.x) this._sourceOffset.x = x;
 				if(y < this._sourceOffset.y) this._sourceOffset.y = y;
+
+				//if(x < this._sourceOffset.x) this._sourceOffset = {x:x, y:this._sourceOffset.y};
+				//if(y < this._sourceOffset.y) this._sourceOffset = {x:this._sourceOffset.x, y:y};
+
+
+				//if(this.name == "boxu3") trace(this._sourceOffset, this._sourceOffset.x);
 			break;
 			case Instruction.QUADRATICCURVETO:
 				// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
@@ -2129,7 +2172,7 @@ try{
 		if(isNaN(y)) throw new ArgumentError("y value must be a Number");
 		
 		this.instruction([Instruction.LINETO, x, y]);
-		
+
 		this._points.push(new Point(x, y));
 	}
 	Graphics.prototype.lineWidth = function(val) {

@@ -13,8 +13,9 @@ window.onload = function() {
 	stage.canvas = document.getElementById('myCanvas');
 	stage.fps = 24;
 
+
 	var box0 = new Sprite();
-	box0.name = "box1";
+	box0.name = "box0";
 	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
 	box0.drawOrigin = true;
 	box0.graphics.beginFill(0x999999);
@@ -115,68 +116,214 @@ window.onload = function() {
 	circ4.y = 60;
 	circ3.addChild(circ4);
 
-	var box00 = new Sprite();
-	box00.name = "box1";
+	/**
+	 * these boxes (boxu\d) are drawn from the bottom right rather than the top left
+	 */
+
+	var boxu0 = new Sprite();
+	boxu0.name = "boxu0";
 	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
-	box00.drawOrigin = true;
-	box00.graphics.beginFill(0x999999);
-	//box00.graphics.drawRect(-75, -75, 50, 50);
-	box00.moveTo(-25, -25);
-	box00.lineTo(-75, -25);
-	box00.lineTo(-75, -75);
-	box00.lineTo(-25, -75);
-	box00.graphics.fill();
-	box00.x = 225;
-	box00.y = 75;
-	stage.addChild(box00);
+	boxu0.graphics.beginFill(0x999999);
+	//boxu0.graphics.drawRect(-75, -75, 50, 50);
+	boxu0.graphics.moveTo(-25, -25);
+	boxu0.graphics.lineTo(-75, -25);
+	boxu0.graphics.lineTo(-75, -75);
+	boxu0.graphics.lineTo(-25, -75);
+	boxu0.graphics.lineTo(-25, -25);
+	boxu0.graphics.fill();
+	boxu0.x = 225;
+	boxu0.y = 75;
+	stage.addChild(boxu0);
 
-	var box11 = new Sprite();
-	box11.name = "box11";
-	//box11.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
-	box11.drawOrigin = true;
-	box11.graphics.beginFill(0x999999);
-	box11.graphics.drawRect(-50, -50, 50, 50);
-	box11.graphics.fill();
-	box11.x = 0;
-	box11.y = 60;
-	box00.addChild(box11);
+	var boxu1 = new Sprite();
+	boxu1.name = "boxu1";
+	boxu1.drawOrigin = true;
+	boxu1.graphics.beginFill(0x999999);
+	//boxu1.graphics.drawRect(-50, -50, 50, 50);
+	boxu1.graphics.moveTo(0, 0);
+	boxu1.graphics.lineTo(-50, 0);
+	boxu1.graphics.lineTo(-50, -50);
+	boxu1.graphics.lineTo(0, -50);
+	boxu1.graphics.lineTo(0, 0);
+	boxu1.graphics.fill();
+	boxu1.x = 0;
+	boxu1.y = 60;
+	boxu0.addChild(boxu1);
 	
-	var box22 = new Sprite();
-	box22.name = "box22";
-	box22.drawOrigin = true;
-	box22.graphics.beginFill(0x999999);
-	box22.graphics.drawRect(-25, -25, 50, 50);
-	box22.graphics.endFill();
-	box22.x = 0;
-	box22.y = 60;
-	box11.addChild(box22);
+	var boxu2 = new Sprite();
+	boxu2.name = "boxu2";
+	boxu2.drawOrigin = true;
+	boxu2.graphics.beginFill(0x999999);
+	//boxu2.graphics.drawRect(-25, -25, 50, 50);
+	boxu2.graphics.moveTo(25, 25);
+	boxu2.graphics.lineTo(-25, 25);
+	boxu2.graphics.lineTo(-25, -25);
+	boxu2.graphics.lineTo(25, -25);
+	boxu2.graphics.lineTo(25, 25);
+	boxu2.graphics.endFill();
+	boxu2.x = 0;
+	boxu2.y = 60;
+	boxu1.addChild(boxu2);
 	
-	var box33 = new Sprite();
-	box33.name = "box33";
-	box33.drawOrigin = true;
-	box33.graphics.beginFill(0x999999);
-	box33.graphics.drawRect(0, 0, 50, 50);
-	box33.graphics.endFill();
-	box33.x = 0;
-	box33.y = 60;
-	box22.addChild(box33);
+	var boxu3 = new Sprite();
+	boxu3.name = "boxu3";
+	boxu3.drawOrigin = true;
+	boxu3.graphics.beginFill(0x999999);
+	//boxu3.graphics.drawRect(0, 0, 50, 50);
 
-	var box44 = new Sprite();
-	box44.name = "box44";
-	box44.drawOrigin = true;
-	box44.graphics.beginFill(0x999999);
-	box44.graphics.drawRect(25, 25, 50, 50);
-	box44.graphics.endFill();
-	box44.x = 0;
-	box44.y = 60;
-	box33.addChild(box44);
+	switch("trc") {
+		// clockwise
+		case "tlc":
+			// box
+			boxu3.graphics.moveTo(0, 0);
+			boxu3.graphics.lineTo(50, 0);
+			boxu3.graphics.lineTo(50, 50);
+			boxu3.graphics.lineTo(0, 50);
+			boxu3.graphics.lineTo(0, 0);
+		break;
+		case "trc":
+			// blank
+			boxu3.graphics.moveTo(50, 0);
+			boxu3.graphics.lineTo(50, 50);
+			boxu3.graphics.lineTo(0, 50);
+			boxu3.graphics.lineTo(0, 0);
+			boxu3.graphics.lineTo(50, 0);
+		break;
+		case "blc":
+			// box
+			boxu3.graphics.moveTo(0, 50);
+			boxu3.graphics.lineTo(0, 0);
+			boxu3.graphics.lineTo(50, 0);
+			boxu3.graphics.lineTo(50, 50);
+			boxu3.graphics.lineTo(0, 50);
+		break;
+		case "brc":
+			// triangle (top)
+			boxu3.graphics.moveTo(50, 50);
+			boxu3.graphics.lineTo(0, 50);
+			boxu3.graphics.lineTo(0, 0);
+			boxu3.graphics.lineTo(50, 0);
+			boxu3.graphics.lineTo(50, 50);
+		break;
+
+		// counter clockwise
+		case "tl":
+			// box
+			boxu3.graphics.moveTo(0, 0);
+			boxu3.graphics.lineTo(0, 50);
+			boxu3.graphics.lineTo(50, 50);
+			boxu3.graphics.lineTo(50, 0);
+			boxu3.graphics.lineTo(0, 0);
+		break;
+		case "tr":
+			// box
+			boxu3.graphics.moveTo(50, 0);
+			boxu3.graphics.lineTo(0, 0);
+			boxu3.graphics.lineTo(0, 50);
+			boxu3.graphics.lineTo(50, 50);
+			boxu3.graphics.lineTo(50, 0);
+		break;
+		case "br":
+			// triangle (bottom)
+			boxu3.graphics.moveTo(50, 50);
+			boxu3.graphics.lineTo(50, 0);
+			boxu3.graphics.lineTo(0, 0);
+			boxu3.graphics.lineTo(0, 50);
+			boxu3.graphics.lineTo(50, 50);
+		break;
+		case "bl":
+			// blank
+			boxu3.graphics.moveTo(0, 50);
+			boxu3.graphics.lineTo(50, 50);
+			boxu3.graphics.lineTo(50, 0);
+			boxu3.graphics.lineTo(0, 0);
+			boxu3.graphics.lineTo(0, 50);
+		break;
+	}
+
+	boxu3.graphics.endFill();
+	boxu3.x = 0;
+	boxu3.y = 60;
+	boxu2.addChild(boxu3);
+
+	var boxu4 = new Sprite();
+	boxu4.name = "boxu4";
+	boxu4.drawOrigin = true;
+	boxu4.graphics.beginFill(0x999999);
+	//boxu4.graphics.drawRect(25, 25, 50, 50);
+	boxu4.graphics.moveTo(75, 75);
+	boxu4.graphics.lineTo(25, 75);
+	boxu4.graphics.lineTo(25, 25);
+	boxu4.graphics.lineTo(75, 25);
+	boxu4.graphics.lineTo(75, 75);
+	boxu4.graphics.endFill();
+	boxu4.x = 0;
+	boxu4.y = 60;
+	boxu3.addChild(boxu4);
+
+	// used to help setup bounding boxes for rotated graphics
+
+	var boxr0 = new Sprite();
+	boxr0.name = "boxr0";
+	boxr0.drawOrigin = true;
+	boxr0.graphics.beginFill(0x999999);
+	boxr0.graphics.drawRect(-25, -25, 50, 50);
+	boxr0.graphics.fill();
+	boxr0.x = 250;
+	boxr0.y = 25;
+	boxr0.rotation = 45;
+	stage.addChild(boxr0);
+
+	var boxr1 = new Sprite();
+	boxr1.name = "boxr1";
+	boxr1.drawOrigin = true;
+	boxr1.graphics.beginFill(0x999999);
+	boxr1.graphics.drawRect(-25, -25, 50, 50);
+	boxr1.graphics.fill();
+	boxr1.x = 275;
+	boxr1.y = 110;
+	boxr1.rotation = 135;
+	stage.addChild(boxr1);
+	
+	var boxr2 = new Sprite();
+	boxr2.name = "boxr2";
+	boxr2.drawOrigin = true;
+	boxr2.graphics.beginFill(0x999999);
+	boxr2.graphics.drawRect(-25, -25, 50, 50);
+	boxr2.graphics.endFill();
+	boxr2.x = 300;
+	boxr2.y = 195;
+	boxr2.rotation = 225;
+	stage.addChild(boxr2);
+	
+	var boxr3 = new Sprite();
+	boxr3.name = "boxr3";
+	boxr3.drawOrigin = true;
+	boxr3.graphics.beginFill(0x999999);
+	boxr3.graphics.drawRect(-25, -25, 50, 50);
+	boxr3.graphics.endFill();
+	boxr3.x = 325;
+	boxr3.y = 280;
+	boxr3.rotation = 315;
+	stage.addChild(boxr3);
+
+	var boxr4 = new Sprite();
+	boxr4.name = "boxr4";
+	boxr4.drawOrigin = true;
+	boxr4.graphics.beginFill(0x999999);
+	boxr4.graphics.drawRect(-25, -25, 50, 50);
+	boxr4.graphics.endFill();
+	boxr4.x = 350;
+	boxr4.y = 365;
+	boxr4.rotation = 45;
+	stage.addChild(boxr4);
 }
 </script>
 </head>
 
 <body>
 
-<canvas id="myCanvas" width="550" height="400" style="position:relative; left:0; top:0;"></canvas>
+<canvas id="myCanvas" width="550" height="450" style="position:relative; left:0; top:0;"></canvas>
 
 </body>
 </html>
