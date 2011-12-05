@@ -9,6 +9,7 @@
 window.onload = function() {
 	stage.canvas = (document.getElementById('myCanvas'));
 	stage.fps = 24;
+	stage.drawStageObjects = true;
 	
 	var img = new Loader();
 	img.contentLoaderInfo.addEventListener(Event.COMPLETE, function(event) {
@@ -21,7 +22,7 @@ window.onload = function() {
 </script>
 </head>
 
-<body>
+<body style="margin:3px">
 
 <canvas id="myCanvas" width="550" height="400" style="position:relative; left:0; top:0;"></canvas>
 

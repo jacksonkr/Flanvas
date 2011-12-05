@@ -7,45 +7,45 @@
 <script src="../src/flanvas.js" type="text/javascript"></script>
 <script type="text/javascript">
 
-var dynTf;
-
-function changeText(str) {
-	dynTf.text = str;
-}
-
 window.onload = function() {
-	_f.traceDiv = document.getElementById('trace');
-	//_f.clearTraceOnFrame = false;
-	//_f.traceDraw = true;
 	stage.canvas = document.getElementById('myCanvas');
 	stage.fps = 24;
+	stage.drawStageObjects = true;
 	
-	// the dynTf var is set up above so that the setTimeout func can find it (scope)
-	dynTf = new com.flanvas.text.TextField();
+	var dynTf = new com.flanvas.text.TextField();
 	dynTf.x = 150.0;
-	dynTf.y = 50.0;
+	dynTf.y = 0.0;
 	dynTf.text = 'Working with the TextField Class in flanvas.';
 	dynTf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
 	stage.addChild(dynTf);
-	setTimeout('changeText(\'Change the text to say this.\')', 2000);
+	setTimeout(function() {
+		dynTf.text = "Change the text to say this."
+	}, 2000);
 	
 	var leftTf = new com.flanvas.text.TextField();
 	leftTf.text = 'This is left aligned';
 	leftTf.autoSize = com.flanvas.text.TextFieldAutoSize.LEFT;
 	leftTf.x = 150.0;
-	leftTf.y = 100;
+	leftTf.y = 20;
 	
 	var centerTf = new com.flanvas.text.TextField();
-	centerTf.text = 'This text is center aligned';
+	centerTf.text = 'This text is center aligned.';
 	centerTf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
 	centerTf.x = 150.0;
-	centerTf.y = 130;
+	centerTf.y = 40;
+
+	var rotateTf = new com.flanvas.text.TextField();
+	rotateTf.text = 'This text is centered and rotated by 10 degrees.';
+	rotateTf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
+	rotateTf.x = 150.0;
+	rotateTf.y = 60;
+	rotateTf.rotation = 10;
 	
 	var rightTf = new com.flanvas.text.TextField();
 	rightTf.text = 'This text is right aligned';
 	rightTf.autoSize = com.flanvas.text.TextFieldAutoSize.RIGHT;
 	rightTf.x = 150.0;
-	rightTf.y = 160;
+	rightTf.y = 80;
 	
 	var inputTf = new com.flanvas.text.TextField();
 	inputTf.text = 'This is an input field';
@@ -53,28 +53,42 @@ window.onload = function() {
 	//inputTf.autoSize = com.flanvas.text.TextFieldAutoSize.LEFT;
 	inputTf.border = true;
 	inputTf.x = 150.0;
-	inputTf.y = 190;
+	inputTf.y = 100;
 	
 	var mlTf = new com.flanvas.text.TextField();
 	mlTf.text = 'This is a text field where the text is too long to fit on one line';
-	mlTf.width = 100;
 	mlTf.wordWrap = true;
-	mlTf.x = 100;
-	mlTf.y = 220;
+	mlTf.x = 150;
+	mlTf.y = 120;
+
+	var bigTf = new com.flanvas.text.TextField();
+	bigTf.text = "This is a larger font.";
+	bigTf.size = "24px";
+	bigTf.x = 150;
+	bigTf.y = 140;
+
+	var smallTf = new com.flanvas.text.TextField();
+	smallTf.text = "This is a smaller font.";
+	smallTf.size = "8px";
+	smallTf.x = 150;
+	smallTf.y = 175;
+
 	
 	stage.addChild(leftTf);
 	stage.addChild(centerTf);
+	stage.addChild(rotateTf);
 	stage.addChild(rightTf);
 	stage.addChild(inputTf);
 	stage.addChild(mlTf);
+	stage.addChild(bigTf);
+	stage.addChild(smallTf);
 }
 </script>
 </head>
 
 <body>
 
-<div id="trace" width="250" height="350" style="position:absolute; right:0; text-align:right;"></div>
-<canvas id="myCanvas" width="550" height="400" style="position:absolute; left:0; top:0;"></canvas>
+<canvas id="myCanvas" width="550" height="400" style="position:relative; left:0; top:0;"></canvas>
 
 </body>
 </html>

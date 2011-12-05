@@ -18,6 +18,7 @@ window.onload = function() {
 	box0.name = "box0";
 	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
 	box0.drawOrigin = true;
+	box0.drawBoundingBox = true;
 	box0.graphics.beginFill(0x999999);
 	box0.graphics.drawRect(-75, -75, 50, 50);
 	box0.graphics.fill();
@@ -29,6 +30,7 @@ window.onload = function() {
 	box1.name = "box1";
 	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
 	box1.drawOrigin = true;
+	box1.drawBoundingBox = true;
 	box1.graphics.beginFill(0x999999);
 	box1.graphics.drawRect(-50, -50, 50, 50);
 	box1.graphics.fill();
@@ -39,6 +41,7 @@ window.onload = function() {
 	var box2 = new Sprite();
 	box2.name = "box2";
 	box2.drawOrigin = true;
+	box2.drawBoundingBox = true;
 	box2.graphics.beginFill(0x999999);
 	box2.graphics.drawRect(-25, -25, 50, 50);
 	box2.graphics.endFill();
@@ -49,6 +52,7 @@ window.onload = function() {
 	var box3 = new Sprite();
 	box3.name = "box3";
 	box3.drawOrigin = true;
+	box3.drawBoundingBox = true;
 	box3.graphics.beginFill(0x999999);
 	box3.graphics.drawRect(0, 0, 50, 50);
 	box3.graphics.endFill();
@@ -59,6 +63,7 @@ window.onload = function() {
 	var box4 = new Sprite();
 	box4.name = "box4";
 	box4.drawOrigin = true;
+	box4.drawBoundingBox = true;
 	box4.graphics.beginFill(0x999999);
 	box4.graphics.drawRect(25, 25, 50, 50);
 	box4.graphics.endFill();
@@ -69,6 +74,7 @@ window.onload = function() {
 	var circ0 = new Sprite();
 	circ0.name = "circ0";
 	circ0.drawOrigin = true;
+	circ0.drawBoundingBox = true;
 	circ0.graphics.beginFill(0x999999);
 	circ0.graphics.drawCircle(-50, -50, 25);
 	circ0.graphics.endFill();
@@ -79,6 +85,7 @@ window.onload = function() {
 	var circ1 = new Sprite();
 	circ1.name = "circ1";
 	circ1.drawOrigin = true;
+	circ1.drawBoundingBox = true;
 	circ1.graphics.beginFill(0x999999);
 	circ1.graphics.drawCircle(-25, -25, 25);
 	circ1.graphics.endFill();
@@ -89,6 +96,7 @@ window.onload = function() {
 	var circ2 = new Sprite();
 	circ2.name = "circ2";
 	circ2.drawOrigin = true;
+	circ2.drawBoundingBox = true;
 	circ2.graphics.beginFill(0x999999);
 	circ2.graphics.drawCircle(0, 0, 25);
 	circ2.graphics.endFill();
@@ -99,6 +107,7 @@ window.onload = function() {
 	var circ3 = new Sprite();
 	circ3.name = "circ3";
 	circ3.drawOrigin = true;
+	circ3.drawBoundingBox = true;
 	circ3.graphics.beginFill(0x999999);
 	circ3.graphics.drawCircle(25, 25, 25);
 	circ3.graphics.endFill();
@@ -109,6 +118,7 @@ window.onload = function() {
 	var circ4 = new Sprite();
 	circ4.name = "circ4";
 	circ4.drawOrigin = true;
+	circ4.drawBoundingBox = true;
 	circ4.graphics.beginFill(0x999999);
 	circ4.graphics.drawCircle(50, 50, 25);
 	circ4.graphics.endFill();
@@ -138,6 +148,7 @@ window.onload = function() {
 	var boxu1 = new Sprite();
 	boxu1.name = "boxu1";
 	boxu1.drawOrigin = true;
+	boxu1.drawBoundingBox = true;
 	boxu1.graphics.beginFill(0x999999);
 	//boxu1.graphics.drawRect(-50, -50, 50, 50);
 	boxu1.graphics.moveTo(0, 0);
@@ -153,6 +164,7 @@ window.onload = function() {
 	var boxu2 = new Sprite();
 	boxu2.name = "boxu2";
 	boxu2.drawOrigin = true;
+	boxu2.drawBoundingBox = true;
 	boxu2.graphics.beginFill(0x999999);
 	//boxu2.graphics.drawRect(-25, -25, 50, 50);
 	boxu2.graphics.moveTo(25, 25);
@@ -168,79 +180,14 @@ window.onload = function() {
 	var boxu3 = new Sprite();
 	boxu3.name = "boxu3";
 	boxu3.drawOrigin = true;
+	boxu3.drawBoundingBox = true;
 	boxu3.graphics.beginFill(0x999999);
 	//boxu3.graphics.drawRect(0, 0, 50, 50);
-
-	switch("trc") {
-		// clockwise
-		case "tlc":
-			// box
-			boxu3.graphics.moveTo(0, 0);
-			boxu3.graphics.lineTo(50, 0);
-			boxu3.graphics.lineTo(50, 50);
-			boxu3.graphics.lineTo(0, 50);
-			boxu3.graphics.lineTo(0, 0);
-		break;
-		case "trc":
-			// blank
-			boxu3.graphics.moveTo(50, 0);
-			boxu3.graphics.lineTo(50, 50);
-			boxu3.graphics.lineTo(0, 50);
-			boxu3.graphics.lineTo(0, 0);
-			boxu3.graphics.lineTo(50, 0);
-		break;
-		case "blc":
-			// box
-			boxu3.graphics.moveTo(0, 50);
-			boxu3.graphics.lineTo(0, 0);
-			boxu3.graphics.lineTo(50, 0);
-			boxu3.graphics.lineTo(50, 50);
-			boxu3.graphics.lineTo(0, 50);
-		break;
-		case "brc":
-			// triangle (top)
-			boxu3.graphics.moveTo(50, 50);
-			boxu3.graphics.lineTo(0, 50);
-			boxu3.graphics.lineTo(0, 0);
-			boxu3.graphics.lineTo(50, 0);
-			boxu3.graphics.lineTo(50, 50);
-		break;
-
-		// counter clockwise
-		case "tl":
-			// box
-			boxu3.graphics.moveTo(0, 0);
-			boxu3.graphics.lineTo(0, 50);
-			boxu3.graphics.lineTo(50, 50);
-			boxu3.graphics.lineTo(50, 0);
-			boxu3.graphics.lineTo(0, 0);
-		break;
-		case "tr":
-			// box
-			boxu3.graphics.moveTo(50, 0);
-			boxu3.graphics.lineTo(0, 0);
-			boxu3.graphics.lineTo(0, 50);
-			boxu3.graphics.lineTo(50, 50);
-			boxu3.graphics.lineTo(50, 0);
-		break;
-		case "br":
-			// triangle (bottom)
-			boxu3.graphics.moveTo(50, 50);
-			boxu3.graphics.lineTo(50, 0);
-			boxu3.graphics.lineTo(0, 0);
-			boxu3.graphics.lineTo(0, 50);
-			boxu3.graphics.lineTo(50, 50);
-		break;
-		case "bl":
-			// blank
-			boxu3.graphics.moveTo(0, 50);
-			boxu3.graphics.lineTo(50, 50);
-			boxu3.graphics.lineTo(50, 0);
-			boxu3.graphics.lineTo(0, 0);
-			boxu3.graphics.lineTo(0, 50);
-		break;
-	}
-
+	boxu3.graphics.moveTo(50, 50);
+	boxu3.graphics.lineTo(0, 50);
+	boxu3.graphics.lineTo(0, 0);
+	boxu3.graphics.lineTo(50, 0);
+	boxu3.graphics.lineTo(50, 50);
 	boxu3.graphics.endFill();
 	boxu3.x = 0;
 	boxu3.y = 60;
@@ -249,6 +196,7 @@ window.onload = function() {
 	var boxu4 = new Sprite();
 	boxu4.name = "boxu4";
 	boxu4.drawOrigin = true;
+	boxu4.drawBoundingBox = true;
 	boxu4.graphics.beginFill(0x999999);
 	//boxu4.graphics.drawRect(25, 25, 50, 50);
 	boxu4.graphics.moveTo(75, 75);
@@ -266,6 +214,7 @@ window.onload = function() {
 	var boxr0 = new Sprite();
 	boxr0.name = "boxr0";
 	boxr0.drawOrigin = true;
+	boxr0.drawBoundingBox = true;
 	boxr0.graphics.beginFill(0x999999);
 	boxr0.graphics.drawRect(-25, -25, 50, 50);
 	boxr0.graphics.fill();
@@ -277,6 +226,7 @@ window.onload = function() {
 	var boxr1 = new Sprite();
 	boxr1.name = "boxr1";
 	boxr1.drawOrigin = true;
+	boxr1.drawBoundingBox = true;
 	boxr1.graphics.beginFill(0x999999);
 	boxr1.graphics.drawRect(-25, -25, 50, 50);
 	boxr1.graphics.fill();
@@ -288,6 +238,7 @@ window.onload = function() {
 	var boxr2 = new Sprite();
 	boxr2.name = "boxr2";
 	boxr2.drawOrigin = true;
+	boxr2.drawBoundingBox = true;
 	boxr2.graphics.beginFill(0x999999);
 	boxr2.graphics.drawRect(-25, -25, 50, 50);
 	boxr2.graphics.endFill();
@@ -299,6 +250,7 @@ window.onload = function() {
 	var boxr3 = new Sprite();
 	boxr3.name = "boxr3";
 	boxr3.drawOrigin = true;
+	boxr3.drawBoundingBox = true;
 	boxr3.graphics.beginFill(0x999999);
 	boxr3.graphics.drawRect(-25, -25, 50, 50);
 	boxr3.graphics.endFill();
@@ -310,6 +262,7 @@ window.onload = function() {
 	var boxr4 = new Sprite();
 	boxr4.name = "boxr4";
 	boxr4.drawOrigin = true;
+	boxr4.drawBoundingBox = true;
 	boxr4.graphics.beginFill(0x999999);
 	boxr4.graphics.drawRect(-25, -25, 50, 50);
 	boxr4.graphics.endFill();

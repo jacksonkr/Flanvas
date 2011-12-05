@@ -14,6 +14,7 @@ window.onload = function() {
 	//box1.graphics.fillStyle('rbga(153, 0, 0, 0.5)');
 	box1.name = "box1";
 	box1.drawOrigin = true;
+	box1.drawBoundingBox = true;
 	box1.graphics.beginFill(0x990000, 0.5);
 	box1.graphics.drawRect(0, 0, 100, 100);
 	box1.graphics.fill();
@@ -56,6 +57,7 @@ window.onload = function() {
 	
 	var circ1 = new Sprite();
 	circ1.name = "circ1";
+	circ1.drawOrigin = true;
 	circ1.graphics.beginFill(0x009900);
 	circ1.graphics.drawCircle(0, 0, 25);
 	circ1.graphics.endFill();
@@ -66,6 +68,7 @@ window.onload = function() {
 	
 	var circ2 = new Sprite();
 	circ2.name = "circ2";
+	circ2.drawOrigin = true;
 	circ2.graphics.beginFill(0x000099);
 	circ2.graphics.drawCircle(0, 0, 10);
 	circ2.graphics.endFill();
@@ -75,6 +78,7 @@ window.onload = function() {
 	
 	var circ3 = new Sprite();
 	circ3.name = "circ3";
+	circ3.drawOrigin = true;
 	circ3.graphics.beginFill(0x990000);
 	circ3.graphics.drawCircle(0, 0, 2.5);
 	circ3.graphics.endFill();

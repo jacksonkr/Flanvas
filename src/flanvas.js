@@ -42,6 +42,21 @@
  * own interpretation of how those parts probably work.
  */
 
+/**
+ * Comment style - mix between ASDoc(AS3) and Javadoc(Java)
+ *
+ * ASDoc comments: http://livedocs.adobe.com/flex/3/html/help.html?content=asdoc_3.html
+ * Javadoc comments: http://en.wikipedia.org/wiki/Javadoc
+ * 
+ * Param
+ * @param [name]:[type]
+ * eg. @param param1:String
+ *
+ * Return
+ * @return:[type] Description of the return
+ * eg. @return:String Returns a string.
+ */
+
 try{
 	/**
 	 * Recieved ideas for inheritence from the web (google)
@@ -68,6 +83,7 @@ try{
 				
 				var h = f2.args || f1.head;
 				
+				//trace(f2.args, f1.str, f2.str);
 				eval('this.prototype._construct = function('+f2.args+') {\n'+f1.str+f2.str+'}');
 			}
 			
@@ -285,7 +301,7 @@ try{
 			return this._alpha;
 		});
 		this.__defineSetter__('alpha', function(val) {
-			this._alpha = val;
+			this._alpha = +val;
 			var spread = 4;
 			for(var i = 0; i < this._imageData.data.length / spread; ++i) {
 				this._imageData.data[i*spread + 3] = this._alpha * 255;
@@ -510,7 +526,7 @@ try{
 		this._offsetY = offsetY;
 		
 		this.__defineGetter__('blur', function(val) {
-			this._blur = val;
+			this._blur = +val;
 		});
 		this.__defineSetter__('blur', function() {
 			return this._blur;
@@ -525,13 +541,13 @@ try{
 			return this._offsetX;
 		});
 		this.__defineSetter__('offsetX', function(val) {
-			this._offsetX = val;
+			this._offsetX = +val;
 		});
 		this.__defineGetter__('offsetY', function() {
 			return this._offsetY;
 		});
 		this.__defineSetter__('offsetY', function(val) {
-			this._offsetX = val;
+			this._offsetX = +val;
 		});
 	}
 	com.flanvas.filters.DropShadowFilter.extend(com.flanvas.filters.BitmapFilter);
@@ -554,7 +570,14 @@ try{
 		 * stores the Rect which is the absloute bounds of the box. 
 		 * This box ends when there is no longer visual data for the object.
 		*/
-		this._boundingBox;
+		this._boundingBox = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
+		/**
+		 * When the bounds are validated, no bounding box is re-drawn.
+		 * Bounds need validation otherwise a bounding box will appear to be wrong when
+		 * a DisplayObject has be rotated. This happens because rotation does not trigger
+		 * a general validation so boundsValidated was born for this purpose.
+		 */
+		this._boundsValidated = false;
 		this._filters = [];
 		this._last_mouse_down_time = undefined;
 		this._mask = undefined;
@@ -567,7 +590,7 @@ try{
 		 * area of the source context. the Source Offset allows the context to grow in size, but
 		 * keep the relative position of the 0,0 for the object.
 		 */
-		this._sourceOffset;
+		this._sourceOffset = new Point(Infinity, Infinity);
 		this._rotation = 0;
 		this._root = undefined;
 		this._stage = undefined;
@@ -579,24 +602,19 @@ try{
 		 * _source holds the source context (canvas element) for the original drawing of this item.
 		 * The _source is only changed with drawing requires validation (changing color, adding graphics, etc)
 		 */
-		this._source;
+		this._source = Utils.virtualContext(false);
 		this._transform = new Transform();
 		this._x = 0;
 		this._y = 0;
 		this._validated = false;
-
-
-		this._source = Utils.virtualContext(false);
-		this._boundingBox = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
-		this._sourceOffset = {x:Infinity, y:Infinity};
 		
 		this.parent = undefined;
 		this.visible = true;
 		
 		var self = this;
 		this.__defineGetter__('absAlpha', function() {
-			if(this.parent) return this.parent.absAlpha * Number(this.alpha);
-			return Number(this.alpha);
+			if(this.parent) return this.parent.absAlpha * this.alpha;
+			return this.alpha;
 		});
 		this.__defineGetter__('absNumChildren', function() {
 		});
@@ -607,12 +625,12 @@ try{
 			return this.rotation;
 		});
 		this.__defineGetter__('absScaleX', function() {
-			if(this.parent) return this.parent.absScaleX * Number(this.scaleX);
-			return Number(this.scaleX);
+			if(this.parent) return this.parent.absScaleX * this.scaleX;
+			return this.scaleX;
 		});
 		this.__defineGetter__('absScaleY', function() {
-			if(this.parent) return this.parent.absScaleY * Number(this.scaleY);
-			return Number(this.scaleY);
+			if(this.parent) return this.parent.absScaleY * this.scaleY;
+			return this.scaleY;
 		});
 		this.__defineGetter__('absX', function() {
 			var dx = this.x;// + this.parent.absScaleX;
@@ -625,10 +643,8 @@ try{
 				
 				//local
 				return this.parent.absX + Math.cos(latan2 + gang) * ld2p;
-
-				//return this.parent.absX + Number(this.x) + this._sourceOffset.x;
 			}
-			return Number(dx);
+			return dx;
 		});
 		this.__defineGetter__('absY', function() {
 			var dy = this.y;// + this.parent.absScaleY;
@@ -641,10 +657,8 @@ try{
 				
 				//local
 				return this.parent.absY + Math.sin(latan2 + gang) * ld2p;
-
-				//return this.parent.absY + Number(this.y) + this._sourceOffset.y;
 			}
-			return Number(dy);
+			return dy;
 		});
 		this.__defineGetter__('alpha', function() {
 			return self._alpha;
@@ -652,7 +666,7 @@ try{
 		this.__defineSetter__('alpha', function(val) {
 			if(isNaN(val)) throw new ArgumentError("Value must be a Number.");
 			
-			self._alpha = val;
+			self._alpha = +val;
 			self.invalidate();
 		});
 		this.__defineGetter__('drawBoundingBox', function() {
@@ -703,9 +717,9 @@ try{
 		this.__defineSetter__('height', function(val) {
 			if(isNaN(val)) throw new ArgumentError("Height must be a Number.");
 			if(this.height > 0) {
-				this._source.height = val;//r.height;
-				this.scaleY = val / this.height;
-			}
+				this._source.height = +val;
+				this.scaleY = +val / this.height;
+			} else this.scaleY = 0;
 			self.invalidate();
 		});
 		this.__defineGetter__('mask', function() {
@@ -736,7 +750,8 @@ try{
 			return self._rotation;
 		});
 		this.__defineSetter__('rotation', function(val) {
-			self._rotation = val;
+			self._rotation = +val;
+			this._boundsValidated = false;
 		});
 		this.__defineGetter__('stage', function() {
 			return self._stage;
@@ -745,7 +760,8 @@ try{
 			return self._transform;
 		});
 		this.__defineSetter__('transform', function(obj) {
-			self._transform = val;
+			self._transform = obj;
+			this._boundsValidated = false;
 		});
 		this.__defineGetter__('x', function() {
 			if(this.parent) return this._x * this.parent.absScaleX;
@@ -753,6 +769,7 @@ try{
 		});
 		this.__defineSetter__('x', function(val) {
 			self._x = +val;
+			this._boundsValidated = false;
 		});
 		this.__defineGetter__('y', function() {
 			if(this.parent) return this._y * this.parent.absScaleY;
@@ -760,6 +777,7 @@ try{
 		});
 		this.__defineSetter__('y', function(val) {
 			self._y = +val;
+			this._boundsValidated = false;
 		});
 		this.__defineGetter__('width', function() {
 			var r = new Rectangle(0, 0, 0, 0);
@@ -784,24 +802,25 @@ try{
 		this.__defineSetter__('width', function(val) {
 			if(isNaN(val)) throw new ArgumentError("value must be a number");
 			if(this.width > 0) {
-				this._source.width = val;
-				this.scaleX = val / this.width;
+				this._source.width = +val;
+				this.scaleX = +val / this.width;
 			} else this.scaleX = 0;
+			this.invalidate();
 		});
 		this.__defineGetter__('scaleX', function() {
-			return Number(this._scale_x);
+			return this._scale_x;
 		});
 		this.__defineSetter__('scaleX', function(val) {
 			if(isNaN(val) || !isFinite(val)) throw new ArgumentError("value must be a number");
-			this._scale_x = val;
+			this._scale_x = +val;
 			this.invalidate();
 		});
 		this.__defineGetter__('scaleY', function() {
-			return Number(this._scale_y);
+			return this._scale_y;
 		});
 		this.__defineSetter__('scaleY', function(val) {
 			if(isNaN(val)) throw new ArgumentError("value must be a number");
-			this._scale_y = val;
+			this._scale_y = +val;
 			this.invalidate();
 		});
 		
@@ -824,7 +843,8 @@ try{
 		});
 
 		//this.drawOrigin = true;
-		this.drawBoundingBox = true;
+		//this.drawBoundingBox = true;
+		//this.drawStageObjects = true;
 	}
 	com.flanvas.display.DisplayObject.extend(com.flanvas.events.EventDispatcher);
 	com.flanvas.display.DisplayObject.prototype.drawSelf = function() {
@@ -833,20 +853,20 @@ try{
 			//var ctx = _f.stage.ctx;
 			var ctx = this._source.getContext("2d");
 			
-			/**
-			 * I'm using this to define gradients used by SVG
-			 */
-			for(var i in Graphics.gradients) {
-				for(var ii in Graphics.gradients[i]) {
-					eval(Graphics.gradients[i][ii]);
-				}
-			}
-			
 			// draw graphics
 			if(this.visible)  {
 				if(!this._validated) {
 					// validate this item.
 					this._validated = true;
+
+					/**
+					 * I'm using this to define gradients used by SVG
+					 */
+					for(var i in Graphics.gradients) {
+						for(var ii in Graphics.gradients[i]) {
+							eval(Graphics.gradients[i][ii]);
+						}
+					}
 					
 					// draw filters
 					for(i in this.filters) {
@@ -854,11 +874,18 @@ try{
 						if(_f.traceDraw) trace(this.filters[i]._instructions[j]);
 					}
 
+					this.updateSourceOffset(); // this will take an object with multiple dras and still find the correct source offset
+					this.updateBoundingBox();
+
+					/**
+					 * before the new draw, make sure the sources are snug and concise
+					 */
+					this._source.width = this._boundingBox.width;
+					this._source.height = this._boundingBox.height;
+
 					for(var i in arr) {
 						try {
 							if(arr[i] instanceof Array) {
-								this.updateSourceOffset(arr[i]); // this will take an object with multiple dras and still find the correct source offset
-								
 								var cmd = arr[i][0];
 								switch(cmd) {
 									case Instruction.ARC:
@@ -878,9 +905,6 @@ try{
 									break;
 									case Instruction.BEZIERCURVETO:
 										// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
-										//if(this._sourceOffset.x < arr[i][5]) this._sourceOffset.x = arr[i][5];
-										//if(this._sourceOffset.y < arr[i][6]) this._sourceOffset.y = arr[i][6];
-
 										var cp1 = this.pp(arr[i][1], arr[i][2]);
 										var cp2 = this.pp(arr[i][3], arr[i][4]);
 										var pt = this.pp(arr[i][5], arr[i][6]);
@@ -922,18 +946,16 @@ try{
 										var x = arr[i][1];
 										var y = arr[i][2];
 
-										this.name == "boxu3" ? trace('l', x, y, this._sourceOffset) :0;
-
 										x -= this._sourceOffset.x;
 										y -= this._sourceOffset.y;
-
-										this.name == "boxu3" ? trace('l2', x, y) :0;
 
 										ctx.lineTo(x, y);
 									break;
 									case Instruction.LINEWIDTH:
 										// [Instruction.LINEWIDTH, val]
-										ctx.lineWidth = arr[i][1];
+										var w = arr[i][1];
+
+										ctx.lineWidth = w;
 									break;
 									case Instruction.MITERLIMIT:
 										// [Instruction.MITERLIMIT, val]
@@ -949,14 +971,10 @@ try{
 
 										var x = arr[i][1];
 										var y = arr[i][2];
-
-										//this.name == "boxu3" ? trace('m', x, y, this._sourceOffset) :0;
-										this.name == "boxu3" ? trace(x, this._sourceOffset, this._sourceOffset.x, x - this._sourceOffset.x) :0;
+										//this.name == "boxu3" ? trace(x, this._sourceOffset, this._sourceOffset.x, x - this._sourceOffset.x) :0;
 
 										x -= this._sourceOffset.x;
 										y -= this._sourceOffset.y;
-
-										this.name == "boxu3" ? trace('m2', x, y) :0;
 
 										ctx.moveTo(x, y);
 									break;
@@ -967,61 +985,80 @@ try{
 										ctx.quadraticCurveTo(cp.x, cp.y, pt.x, pt.y);
 									break;
 									case Instruction.STROKE:
-										// [Instruction.STROKE]
+									// [Instruction.STROKE]
 										ctx.stroke();
 									break;
 									case Instruction.STROKESTYLE:
-										// [Instruction.STROKESTYLE, val]
+									// [Instruction.STROKESTYLE, val]
 										ctx.strokeStyle = this.graphics.compileStyle(arr[i][1]);
 									break;
 									case Instruction.TEXTFIELD:
 										// [Instruction.TEXTFIELD]
 										if(this.background) {
 											ctx.fillStyle = this.backgroundColor;
-											ctx.fillRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
+											//ctx.fillRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
+											ctx.fillRect(0, 0, this.width + this.padding.left + this.padding.right, this.height + this.padding.top + this.padding.bottom);
 										}
 										if(this.border) {
 											ctx.strokeStyle = this.borderColor;
 											ctx.lineWidth = 1;
-											ctx.strokeRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.left + com.flanvas.text.TextField.PADDING.right, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
+											//ctx.strokeRect(this.absX, this.absY, this.width + com.flanvas.text.TextField.PADDING.left + com.flanvas.text.TextField.PADDING.right, this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom);
+											ctx.strokeRect(0, 0, this.width + this.padding.left + this.padding.right, this.height + this.padding.top + this.padding.bottom);
 										}
-									
+										
 										ctx.font = this.font;
 										ctx.fillStyle = this.graphics.compileStyle(this.textColor);
 										ctx.textAlign = this.autoSize;
 										
 										/**
-										 * This part needs mas work. Not the proper way to wrap text
+										 * #warning This part needs mas work. Not the proper way to wrap text
 										 */
 										var text_Arr = this.text.split('\n');
 										if(text_Arr.length > 1) {
 											for(j = 0; j < text_Arr.length; ++j) {
-												ctx.fillText(text_Arr[j], this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height + (this.size * j), this.width);
+												//ctx.fillText(text_Arr[j], this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height + (this.size * j), this.width);
+												ctx.fillText(text_Arr[j], this.padding.left, this.height + (this.size * j), this.width);
 											}
 										} else {
 											// no wrap
-											ctx.fillText(this.text, this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height, this.width);
+											//ctx.fillText(this.text, this.absX + com.flanvas.text.TextField.PADDING.left, this.absY + this.height, this.width);
+											ctx.fillText(this.text, 0 - this._sourceOffset.x, this.height, this.width);
 										}
 									
 										if(this._cursor_visible) {
-											var w = this.absX + ctx.measureText(this.text.substr(0, this.caretIndex)).width + com.flanvas.text.TextField.PADDING.left;
+											var w = this.absX + ctx.measureText(this.text.substr(0, this.caretIndex)).width + this.padding.left;
 											ctx.beginPath();
-											ctx.moveTo(w, this.absY + com.flanvas.text.TextField.PADDING.top);
-											ctx.lineTo(w, this.absY + this.height - com.flanvas.text.TextField.PADDING.top);
+											ctx.moveTo(w, this.padding.top);
+											ctx.lineTo(w, this.height - this.padding.top);
 											ctx.closePath();
 											ctx.stroke();
 										}
 									break;
 								}
 								
-								this._source.setAttribute("style", "display:block; border:1px solid #ddf;");
-								document.body.appendChild(this._source);
+								if(stage.drawStageObjects) {
+									try {
+										document.replaceChild(document.getElementById(this.name), this._source);
+									} catch(e) {
+										var self = this;
+										this._source.setAttribute("id", this.name);
+										var defaultStyle = function() {
+											self._source.setAttribute("style", "display:block; border:1px solid gray; margin:2px 0;");
+										};
+										this._source.addEventListener("mouseover", function(){
+											self._source.setAttribute("style", "display:block; border:none; margin:3px 1px;");
+										});
+										this._source.addEventListener("mouseout", defaultStyle);
+										defaultStyle();
+										document.body.appendChild(this._source);
+									}
+								}
 							} else {
 								eval(arr[i]);
 							}
 							if(_f.traceDraw) trace(arr[i]);
 						} catch(e) {
-							throw new Error(e + "; " + arr[i]);
+							throw new Error(e.print + "; " + arr[i]);
 						}
 					}
 				} else {
@@ -1039,17 +1076,19 @@ try{
 						
 						if(this.parent) {
 							// incorporate parent's rotation
-							var dx = this.x;// + this.parent.absScaleX;
-							var dy = this.y;// + this.parent.absScaleY;
+							var dx = this.x;
+							var dy = this.y;
 							var ld2p = Math.sqrt(dx*dx + dy*dy); // local
-							var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
+							var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation (not including this)
 							var latan2 = Math.atan2(dy, dx); // local atan2 rads
 							
+							// adding local rot with parent+ rot to get the total rotation
 							x = this.parent.absX + Math.cos(latan2 + gang) * ld2p;				
 							y = this.parent.absY + Math.sin(latan2 + gang) * ld2p;
 						}
 						
 						_f.stage.ctx.save();
+						// #warning establish a valid transform (similar to as3)
 						_f.stage.ctx.setTransform(m11,m12,m21,m22,x,y);
 						_f.stage.ctx.rotate(this.absRotation * Math.PI / 180);
 						_f.stage.ctx.drawImage(this._source, this._sourceOffset.x, this._sourceOffset.y);
@@ -1086,8 +1125,8 @@ try{
 				 * allows the developer to set a flag which shows the bounding box by
 				 * representation of red lines resembline a box.
 				 */
-				if(this.drawBoundingBox) this.updateBoundingBox();
-				if(this._boundingBox.x < Infinity && this._boundingBox.y < Infinity) {
+				!this._boundsValidated && this.updateBoundingBox();
+				if(this.drawBoundingBox) {
 					var size = 1;
 
 					var d = [];
@@ -1149,7 +1188,7 @@ try{
 	}
 	com.flanvas.display.DisplayObject.prototype.globalToLocal = function(point) {
 		if(!(point instanceof Point)) throw new ArgumentError("A Point is required.");
-		var pt = new Point(point.x - Number(this.absX), point.y - Number(this.absY));
+		var pt = new Point(point.x - this.absX, point.y - this.absY);
 		pt.oldx = point.x;
 		pt.absx = this.absX;
 		return pt;
@@ -1159,7 +1198,7 @@ try{
 	}
 	com.flanvas.display.DisplayObject.prototype.localToGlobal = function(point) {
 		if(point === undefined) throw new ArgumentError("A Point is required");
-		return new Point(point.x + Number(this.absX), point.y + Number(this.absY));
+		return new Point(point.x + this.absX, point.y + this.absY);
 	}
 	// 
 	/**
@@ -1196,6 +1235,7 @@ try{
 		return {'x':to_x + this._sourceOffset.x, 'y':to_y + this._sourceOffset.y};
 	}
 	com.flanvas.display.DisplayObject.prototype.updateBoundingBox = function() {
+		this._boundsValidated = true;
 		this._boundingBox = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
 
 		for(var i = 0; i < this.graphics.data.length; ++i) {
@@ -1207,12 +1247,115 @@ try{
 					var x = arr[1];
 					var y = arr[2];
 					var radius = arr[3];
-					if(x - radius < this._boundingBox.x) this._boundingBox.x = x - radius;
-					if(y - radius < this._boundingBox.y) this._boundingBox.y = y - radius;
-					if(radius*2 > this._boundingBox.width) this._boundingBox.width = radius*2;
-					if(radius*2 > this._boundingBox.height) this._boundingBox.height = radius*2;
+					if(x - radius * this.absScaleX < this._boundingBox.x) this._boundingBox.x = x - radius * this.absScaleX;
+					if(y - radius * this.absScaleY < this._boundingBox.y) this._boundingBox.y = y - radius * this.absScaleY;
+					if(radius*2 * this.absScaleX > this._boundingBox.width) this._boundingBox.width = radius*2 * this.absScaleX;
+					if(radius*2 * this.absScaleY > this._boundingBox.height) this._boundingBox.height = radius*2 * this.absScaleY;
 
 					//if(this.name == "circ0") trace(x, y);
+				break;
+				case Instruction.BEGINPATH:
+					// [Instruction.BEGINPATH]
+				break;
+				case Instruction.BEZIERCURVETO:
+					// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
+				break;
+				case Instruction.LINECAP:
+					// [Instruction.LINECAP, val]
+				break;
+				case Instruction.LINEJOIN:
+					// [Instruction.LINEJOIN]
+				break;
+				break;
+				case Instruction.LINEWIDTH:
+					// [Instruction.LINEWIDTH, val]
+					var w = arr[1];
+
+					if(w > this._boundingBox.width) this._boundingBox.width = w;
+					if(w > this._boundingBox.height) this._boundingBox.height = w;
+				break;
+				case Instruction.MITERLIMIT:
+					// [Instruction.MITERLIMIT, val]
+				break;
+				case Instruction.LINETO:
+					// [Instruction.LINETO, x, y]
+				case Instruction.MOVETO:
+					// [Instruction.MOVETO, x, y]
+					var x = arr[1];
+					var y = arr[2];
+					var d = Math.sqrt(x*x + y*y); // distance to point from 0,0
+					var r = Math.atan2(y, x) + (this.absRotation / 180 * Math.PI);// radians to the point from 0,0
+
+					x = Math.cos(r) * d;
+					y = Math.sin(r) * d;
+
+					if(x < this._boundingBox.x) this._boundingBox.x = x;
+					if(y < this._boundingBox.y) this._boundingBox.y = y;
+					//if(Math.abs(x) > this._boundingBox.width) this._boundingBox.width = Math.abs(x);
+					//if(Math.abs(y) > this._boundingBox.height) this._boundingBox.height = Math.abs(y);
+				break;
+				case Instruction.QUADRATICCURVETO:
+					// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
+				break;
+				case Instruction.STROKE:
+					// [Instruction.STROKE]
+				break;
+				case Instruction.STROKESTYLE:
+					// [Instruction.STROKESTYLE, val]
+				break;
+				case Instruction.TEXTFIELD:
+					// [Instruction.TEXTFIELD]
+					var ctx = Utils.virtualContext();
+					ctx.font = this.font;
+					var w = ctx.measureText(this.text).width;
+					var h = +this.size.replace(/\D/g, ''); // get the line height
+					try {
+						h *= this.size.match(/\n/g).length || 1;
+					} catch (e) {}
+					h += this.padding.bottom;
+					
+					if(w > this._boundingBox.width) this._boundingBox.width = w;
+					if(h > this._boundingBox.height) this._boundingBox.height = h;
+
+					delete ctx;
+				break;
+			}
+		}
+
+		// find the longest lines inside the graphics to decide bounding box width and height
+		for(var i = 0; i < this.graphics._points.length; ++i) {
+			var ptA = this.graphics._points[i];
+			for(var j = 0; j < this.graphics._points.length; ++j) {
+				var ptB = this.graphics._points[j];
+				var xA = ptA.x - this._sourceOffset.x;
+				var yA = ptA.y - this._sourceOffset.y;
+				var xB = ptB.x - this._sourceOffset.x;
+				var yB = ptB.y - this._sourceOffset.y;
+				var d = Math.sqrt(Math.pow(xB - xA, 2) + Math.pow(yB - yA, 2)); // distance from ptA to ptB
+				var r = Math.atan2(yB - yA, xB - xA) + (this.absRotation / 180 * Math.PI);// radians regarding the relationship of ptA and ptB
+				
+				if(Math.abs(Math.cos(r) * d) * this.absScaleX > this._boundingBox.width) this._boundingBox.width = Math.abs(Math.cos(r) * d) * this.absScaleX;
+				if(Math.abs(Math.sin(r) * d) * this.absScaleY > this._boundingBox.height) this._boundingBox.height = Math.abs(Math.sin(r) * d) * this.absScaleY;
+			}
+		}
+	}
+	/**
+	 * This updates the offset for drawing (different than the origin).
+	 * This is needed since a circle is drawn from the center so you have to set a drawing off set of the radius.
+	 * The same will need to be done for awkward shapes. Anything that has a drawing center other than top-left
+	 */
+	com.flanvas.display.DisplayObject.prototype.updateSourceOffset = function() {
+		this._sourceOffset = new Point(Infinity, Infinity);
+
+		for(var i = 0; i < this.graphics._data.length; ++i) {
+			var arr = this.graphics._data[i];
+			var cmd = arr[0];
+			switch(cmd) {
+				case Instruction.ARC:
+					// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
+					var x = arr[1], y = arr[2], radius = arr[3];
+					if(x - radius < this._sourceOffset.x) this._sourceOffset.x = x - radius;
+					if(y - radius < this._sourceOffset.y) this._sourceOffset.y = y - radius;
 				break;
 				case Instruction.BEGINPATH:
 					// [Instruction.BEGINPATH]
@@ -1239,16 +1382,11 @@ try{
 					// [Instruction.MOVETO, x, y]
 					var x = arr[1];
 					var y = arr[2];
-					var d = Math.sqrt(x*x + y*y); // distance to point from 0,0
-					var r = Math.atan2(y, x) + (this.absRotation / 180 * Math.PI);// radians to the point from 0,0
 
-					x = Math.cos(r) * d;
-					y = Math.sin(r) * d;
-					
-					if(x < this._boundingBox.x) this._boundingBox.x = x;
-					if(y < this._boundingBox.y) this._boundingBox.y = y;
-					//if(Math.abs(x) > this._boundingBox.width) this._boundingBox.width = Math.abs(x);
-					//if(Math.abs(y) > this._boundingBox.height) this._boundingBox.height = Math.abs(y);
+					if(x < this._sourceOffset.x) this._sourceOffset.x = x;
+					if(y < this._sourceOffset.y) this._sourceOffset.y = y;
+
+					//if(this.name == "boxu3") trace(this._sourceOffset, this._sourceOffset.x);
 				break;
 				case Instruction.QUADRATICCURVETO:
 					// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
@@ -1261,88 +1399,33 @@ try{
 				break;
 				case Instruction.TEXTFIELD:
 					// [Instruction.TEXTFIELD]
+
+					var ctx = Utils.virtualContext();
+					ctx.font = this.font;
+					var w = ctx.measureText(this.text).width;
+
+					switch(this.autoSize) {
+						case com.flanvas.text.TextFieldAutoSize.LEFT:
+						case com.flanvas.text.TextFieldAutoSize.NONE:
+						case com.flanvas.text.TextFieldAutoSize.START:
+							if(0 < this._sourceOffset.x) this._sourceOffset.x = 0;
+						break;
+						case com.flanvas.text.TextFieldAutoSize.CENTER:
+							if(0-w/2 < this._sourceOffset.x) this._sourceOffset.x = 0-w/2;
+							// #warning work height
+						break;
+						case com.flanvas.text.TextFieldAutoSize.RIGHT:
+						case com.flanvas.text.TextFieldAutoSize.END:
+							if(0-w < this._sourceOffset.x) this._sourceOffset.x = 0-w;
+						break;
+					}
+
+					if(0 < this._sourceOffset.y) this._sourceOffset.y = 0;
+
+					delete ctx;
 				break;
 			}
 		}
-
-		// find the longest lines inside the graphics to decide bounding box width and height
-		for(var i = 0; i < this.graphics._points.length; ++i) {
-			var pt = this.graphics._points[i];
-			var x = pt.x - this._sourceOffset.x;
-			var y = pt.y - this._sourceOffset.y;
-			var d = Math.sqrt(x*x + y*y); // distance to point from 0,0
-			var r = Math.atan2(y, x) + (this.absRotation / 180 * Math.PI);// radians to the point from 0,0
-			
-			if(Math.abs(Math.cos(r) * d) > this._boundingBox.width) this._boundingBox.width = Math.abs(Math.cos(r) * d);
-			if(Math.abs(Math.sin(r) * d) > this._boundingBox.height) this._boundingBox.height = Math.abs(Math.sin(r) * d);
-					
-			//if(this.name == "box0") trace(this._sourceOffset);
-		}
-	}
-	/**
-	 * This updates the offset for drawing (different than the origin).
-	 * This is needed since a circle is drawn from the center so you have to set a drawing off set of the radius.
-	 * The same will need to be done for awkward shapes. Anything that has a drawing center other than top-left
-	 */
-	com.flanvas.display.DisplayObject.prototype.updateSourceOffset = function(arr) {
-		var cmd = arr[0];
-		switch(cmd) {
-			case Instruction.ARC:
-				// [Instruction.ARC, x, y, radius, start_angle, end_angle, anti_clockwise]
-				var x = arr[1], y = arr[2], radius = arr[3];
-				if(x - radius < this._sourceOffset.x) this._sourceOffset.x = x - radius;
-				if(y - radius < this._sourceOffset.y) this._sourceOffset.y = y - radius;
-			break;
-			case Instruction.BEGINPATH:
-				// [Instruction.BEGINPATH]
-			break;
-			case Instruction.BEZIERCURVETO:
-				// [Instruction.BEZIERCURVETO, cp1x, cp1y, cp2x, cp2y, x, y]
-			break;
-			case Instruction.LINECAP:
-				// [Instruction.LINECAP, val]
-			break;
-			case Instruction.LINEJOIN:
-				// [Instruction.LINEJOIN]
-			break;
-			break;
-			case Instruction.LINEWIDTH:
-				// [Instruction.LINEWIDTH, val]
-			break;
-			case Instruction.MITERLIMIT:
-				// [Instruction.MITERLIMIT, val]
-			break;
-			case Instruction.LINETO:
-				// [Instruction.LINETO, x, y]
-			case Instruction.MOVETO:
-				// [Instruction.MOVETO, x, y]
-				var x = arr[1];
-				var y = arr[2];
-
-				if(x < this._sourceOffset.x) this._sourceOffset.x = x;
-				if(y < this._sourceOffset.y) this._sourceOffset.y = y;
-
-				//if(x < this._sourceOffset.x) this._sourceOffset = {x:x, y:this._sourceOffset.y};
-				//if(y < this._sourceOffset.y) this._sourceOffset = {x:this._sourceOffset.x, y:y};
-
-
-				//if(this.name == "boxu3") trace(this._sourceOffset, this._sourceOffset.x);
-			break;
-			case Instruction.QUADRATICCURVETO:
-				// [Instruction.QUADRATICCURVETO, cpx, cpy, x, y]
-			break;
-			case Instruction.STROKE:
-				// [Instruction.STROKE]
-			break;
-			case Instruction.STROKESTYLE:
-				// [Instruction.STROKESTYLE, val]
-			break;
-			case Instruction.TEXTFIELD:
-				// [Instruction.TEXTFIELD]
-			break;
-		}
-
-		//trace(arr, this._sourceOffset, this.x, this.y);
 	}
 	var DisplayObject = com.flanvas.display.DisplayObject;
 	
@@ -1498,7 +1581,7 @@ try{
 	com.flanvas.text.TextField = function() {
 		this._construct();
 	}
-	com.flanvas.text.TextField.PADDING = {top:2,right:3,bottom:2,left:2};
+	com.flanvas.text.TextField.PADDING = {top:0.25,right:0.25,bottom:0.25,left:0.25}; // done in percentages (of the size in px)
 	com.flanvas.text.TextField.prototype._construct = function() {
 		this._activate_cursor_interval_id = undefined;
 		this._autoSize = com.flanvas.text.TextFieldAutoSize.START;
@@ -1516,6 +1599,7 @@ try{
 		this._text = [''];
 		this._textColor = 'rgb(0,0,0)';
 		this._type = TextFieldType.DYNAMIC;
+		this._width = 100;
 		
 		this.__defineGetter__('autoSize', function() {
 			return this._autoSize;
@@ -1536,6 +1620,7 @@ try{
 		});
 		this.__defineSetter__('borderColor', function(val) {
 			this._border_color = val;
+			this.invalidate();
 		});
 		this.__defineGetter__('borderColor', function() {
 			return this._border_color;
@@ -1558,34 +1643,40 @@ try{
 				case TextFieldAutoSize.NONE:
 				case TextFieldAutoSize.START:
 				case TextFieldAutoSize.END:
-				return Number(this.size.replace('px','')) + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom;
+					//return +(this.size.replace(/px/,'')) + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom;
+					return +this.size.replace(/px/,'');
 			}
 			return this._height;
 		});
 		this.__defineSetter__('height', function(val) {
-			this._height = val;
+			this._height = +val;
+			this.invalidate();
 		});
 		this.__defineGetter__('length', function() {
 			return this._text.length;
 		});
-		this.__defineGetter__('wordWrap', function() {
-			return this._word_wrap;
-		});
-		this.__defineSetter__('wordWrap', function(val) {
-			this._word_wrap = Boolean(val);
+		this.__defineGetter__('padding', function() {
+			var obj = {};
+			var s = +this.size.replace(/px/,'');
+			obj.top = s * com.flanvas.text.TextField.PADDING.top;
+			obj.right = s * com.flanvas.text.TextField.PADDING.right;
+			obj.bottom = s * com.flanvas.text.TextField.PADDING.bottom;
+			obj.left = s * com.flanvas.text.TextField.PADDING.left;
+			return obj;
 		});
 		this.__defineGetter__('size', function() {
 			return this._size;
 		});
 		this.__defineSetter__('size', function(val) {
 			this._size = val;
+			this.invalidate();
 		});
 		this.__defineGetter__('text', function() {
-			//if(Number(this._text)) return Number(this._text) + 'px';
 			return this._text.join('');
 		});
 		this.__defineSetter__('text', function(str) {
 			this._text = [str];
+			this.invalidate();
 			this.dispatchEvent(new Event(Event.CHANGE));
 		});
 		this.__defineGetter__('textColor', function() {
@@ -1593,6 +1684,7 @@ try{
 		});
 		this.__defineSetter__('textColor', function(val) {
 			this._textColor = Utils.rgba(val);
+			this.invalidate();
 		});
 		this.__defineGetter__('type', function() {
 			return this._type;
@@ -1606,6 +1698,7 @@ try{
 				case TextFieldType.INPUT:
 				break;
 			}
+			this.invalidate();
 		});
 		this.__defineSetter__('x', function(val) {
 			switch(this._autoSize) {
@@ -1618,12 +1711,14 @@ try{
 				break;
 			}
 			
-			this._x = val;
+			this._x = +val;
 		});
 		this.__defineGetter__('width', function() {
 			/**
 			 * For now, START and END are matched to LEFT and RIGHT to save time
 			 */
+			if(this._width) return this._width;
+
 			switch(this.autoSize) {
 				case com.flanvas.text.TextFieldAutoSize.NONE:
 					return 100;
@@ -1642,8 +1737,17 @@ try{
 				break;
 			}	
 		});
-		
-		this.width = 100;
+		this.__defineSetter__('width', function(val) {
+			this._width = +val;
+			this.invalidate();
+		});
+		this.__defineGetter__('wordWrap', function() {
+			return this._word_wrap;
+		});
+		this.__defineSetter__('wordWrap', function(val) {
+			this._word_wrap = Boolean(val);
+			this.invalidate();
+		});
 		
 		this.graphics.instruction([Instruction.TEXTFIELD]);
 		
@@ -1681,6 +1785,8 @@ try{
 					this._caret_index = i;
 				} else break loop;
 			}
+
+			delete ctx;
 		});
 	}
 	com.flanvas.text.TextField.extend(com.flanvas.display.InteractiveObject);
@@ -1918,9 +2024,16 @@ try{
 	function Graphics() {
 		this._construct();
 	}
+	/**
+	 * the following gradients-related code was meant to be, and needs to remain static for now
+	 * @param id:String the ID of the gradient from SVG (or other).
+	 * @param arr:Array the drawing instructions for this gradient.
+	 * @param obj:DisplayObject The display object that the gradient is being saved for.
+	 */
 	Graphics.gradients = [];
-	Graphics.registerGradient = function(id, arr) {
+	Graphics.registerGradient = function(id, arr, obj) {
 		Graphics.gradients[id] = arr;
+		obj.invalidate();
 	}
 	Graphics.prototype._construct = function() {
 		this._data = [];
@@ -2589,11 +2702,11 @@ try{
 	}
 	Svg.parseStroke = function(node) {
 		var o = {};
-		if(node.hasAttribute('stroke-width')) o.width = node.attributes.getNamedItem('stroke-width').value;
+		if(node.hasAttribute('stroke-width')) o.width = +node.attributes.getNamedItem('stroke-width').value;
 		else o.width = 0;
-		if(node.hasAttribute('stroke-miterLimit')) o.miterLimit = node.attributes.getNamedItem('stroke-miterLimit').value;
+		if(node.hasAttribute('stroke-miterLimit')) o.miterLimit = +node.attributes.getNamedItem('stroke-miterLimit').value;
 		else o.miterLimit = 0;
-		if(node.hasAttribute('opacity')) o.opacity = node.attributes.getNamedItem('opacity').value;
+		if(node.hasAttribute('opacity')) o.opacity = +node.attributes.getNamedItem('opacity').value;
 		else o.opacity = 1.0;
 		if(node.hasAttribute('stroke')) {
 			o.style = Svg.parseStyle(node.attributes.getNamedItem('stroke').value);
@@ -2683,10 +2796,10 @@ try{
 					case 'circle':
 						//<circle opacity="0.2" fill="#FFFFFF" cx="49.154" cy="64.154" r="37.154"/>
 						var cx, cy, r, opacity = 1.0, fill, stroke;
-						cx = Number(node.attributes.getNamedItem("cx").value);
-						cy = Number(node.attributes.getNamedItem("cy").value);
-						r = Number(node.attributes.getNamedItem("r").value);
-						if(node.hasAttribute('opacity')) opacity = node.attributes.getNamedItem("opacity").value;
+						cx = +node.attributes.getNamedItem("cx").value;
+						cy = +node.attributes.getNamedItem("cy").value;
+						r = +node.attributes.getNamedItem("r").value;
+						if(node.hasAttribute('opacity')) opacity = +node.attributes.getNamedItem("opacity").value;
 						if(node.hasAttribute('fill')) fill = Svg.parseStyle(node.attributes.getNamedItem("fill").value);
 						stroke = Svg.parseStroke(node);
 						
@@ -2712,10 +2825,10 @@ try{
 					break;
 					case 'ellipse':
 						var cx, cy, rx, ry;
-						if(node.hasAttribute('cx')) cx = node.attributes.getNamedItem('cx').value;
-						if(node.hasAttribute('cy')) cy = node.attributes.getNamedItem('cy').value;
-						if(node.hasAttribute('rx')) rx = node.attributes.getNamedItem('rx').value;
-						if(node.hasAttribute('ry')) ry = node.attributes.getNamedItem('ry').value;
+						if(node.hasAttribute('cx')) cx = +node.attributes.getNamedItem('cx').value;
+						if(node.hasAttribute('cy')) cy = +node.attributes.getNamedItem('cy').value;
+						if(node.hasAttribute('rx')) rx = +node.attributes.getNamedItem('rx').value;
+						if(node.hasAttribute('ry')) ry = +node.attributes.getNamedItem('ry').value;
 						
 						var p = this.futureParent(instance_name);
 						var pt = p.globalToLocal(new Point(cx, cy));
@@ -2740,10 +2853,10 @@ try{
 					case 'line':
 						var fill = Svg.parseStyle(node.attributes.getNamedItem("fill").value);
 						var stroke = Svg.parseStroke(node);
-						var x1 = node.attributes.getNamedItem("x1").value;
-						var y1 = node.attributes.getNamedItem("y1").value;
-						var x2 = node.attributes.getNamedItem("x2").value;
-						var y2 = node.attributes.getNamedItem("y2").value;
+						var x1 = +node.attributes.getNamedItem("x1").value;
+						var y1 = +node.attributes.getNamedItem("y1").value;
+						var x2 = +node.attributes.getNamedItem("x2").value;
+						var y2 = +node.attributes.getNamedItem("y2").value;
 						
 						var p = this.futureParent(instance_name);
 						var pt = p.globalToLocal(new Point(x1, y1));
@@ -2761,7 +2874,10 @@ try{
 						o.graphics.moveTo(0, 0);
 						o.graphics.lineTo(x2 - x1, y2 - y1);
 						if(stroke.width) o.graphics.stroke();
-						
+
+						//this.height = stroke.width;
+						//this.width = stroke.width;
+
 						self.addChildAtPath(o, instance_name);
 						//self.addChild(o);
 					break;
@@ -2769,10 +2885,10 @@ try{
 						var arr = [];
 						
 						var id = node.attributes.getNamedItem('id').value;
-						var x1 = node.attributes.getNamedItem("x1").value;
-						var x2 = node.attributes.getNamedItem("x2").value;
-						var y1 = node.attributes.getNamedItem("y1").value;
-						var y2 = node.attributes.getNamedItem("y2").value;
+						var x1 = +node.attributes.getNamedItem("x1").value;
+						var x2 = +node.attributes.getNamedItem("x2").value;
+						var y1 = +node.attributes.getNamedItem("y1").value;
+						var y2 = +node.attributes.getNamedItem("y2").value;
 						
 						//self._instructions.push('var ' + id + ' = ctx.createLinearGradient('+x1+','+y1+','+x2+','+y2+');');
 						arr.push('var ' + id + ' = ctx.createLinearGradient('+x1+','+y1+','+x2+','+y2+')');
@@ -2792,13 +2908,13 @@ try{
 							}
 						}
 
-						Graphics.registerGradient(id, arr);
+						Graphics.registerGradient(id, arr, this);
 					break;
 					case 'path':
 						var fill, stroke, opacity = 1.0;
 						if(node.hasAttribute('fill')) fill = Svg.parseStyle(node.attributes.getNamedItem("fill").value);
 						stroke = Svg.parseStroke(node);
-						if(node.hasAttribute('opacity')) opacity = node.attributes.getNamedItem("opacity").value;
+						if(node.hasAttribute('opacity')) opacity = +node.attributes.getNamedItem("opacity").value;
 						var d = node.attributes.getNamedItem("d").value;
 						
 						// some svg has spaces in it, lets take those out for now.
@@ -2820,7 +2936,7 @@ try{
 						var o = new Sprite();
 						
 						o.graphics.beginPath();
-						o.graphics.fillStyle(fill);
+						if(fill) o.graphics.fillStyle(fill);
 						if(stroke.width) o.graphics.lineStyle(stroke.width, stroke.style, stroke.opacity, null, null, null, stroke.miterLimit);
 						if(opacity) o.alpha = opacity;
 						
@@ -2969,8 +3085,8 @@ try{
 								break;
 							}
 						}
-						
-						o.graphics.fill();
+
+						if(fill) o.graphics.fill();
 						if(stroke.width) o.graphics.stroke();
 
 						self.addChildAtPath(o, instance_name);
@@ -2983,7 +3099,7 @@ try{
 						var points = Svg.parsePoints(node.attributes.getNamedItem('points').value);
 						
 						var fill, stroke, opacity;
-						if(node.hasAttribute('opacity')) opacity = Number(node.attributes.getNamedItem('opacity').value);
+						if(node.hasAttribute('opacity')) opacity = +node.attributes.getNamedItem('opacity').value;
 						if(node.hasAttribute('fill')) fill = Svg.parseStyle(node.attributes.getNamedItem('fill').value);
 						if(node.hasAttribute('stroke')) stroke = Svg.parseStyle(node.attributes.getNamedItem('stroke').value);
 						
@@ -3012,7 +3128,6 @@ try{
 						if(fill) o.graphics.fill();
 						
 						self.addChildAtPath(o, instance_name);
-						trace("ATTACH");
 						//self.addChild(o);
 					break;
 					case 'polyline':
@@ -3058,11 +3173,11 @@ try{
 						
 						var id = node.attributes.getNamedItem('id').value;
 						var cx, cy, r, fx = 0, fy = 0;
-						if(node.hasAttribute("cx")) cx = node.attributes.getNamedItem("cx").value;
-						if(node.hasAttribute("cy")) cy = node.attributes.getNamedItem("cy").value;
-						if(node.hasAttribute("r")) r = node.attributes.getNamedItem("r").value;
-						if(node.hasAttribute("fx")) fx = node.attributes.getNamedItem("fx").value;
-						if(node.hasAttribute("fy")) fy = node.attributes.getNamedItem("fy").value;
+						if(node.hasAttribute("cx")) cx = +node.attributes.getNamedItem("cx").value;
+						if(node.hasAttribute("cy")) cy = +node.attributes.getNamedItem("cy").value;
+						if(node.hasAttribute("r")) r = +node.attributes.getNamedItem("r").value;
+						if(node.hasAttribute("fx")) fx = +node.attributes.getNamedItem("fx").value;
+						if(node.hasAttribute("fy")) fy = +node.attributes.getNamedItem("fy").value;
 						
 						var x1 = cx;
 						var y1 = cy;
@@ -3101,18 +3216,18 @@ try{
 							}
 						}
 						
-						Graphics.registerGradient(id, arr);
+						Graphics.registerGradient(id, arr, this);
 					break;
 					case 'rect':
 						var x1 = 0, y1 = 0;
-						if(node.hasAttribute('x')) x1 = Number(node.attributes.getNamedItem('x').value);
-						if(node.hasAttribute('y')) y1 = Number(node.attributes.getNamedItem('y').value);
-						var x2 = x1 + Number(node.attributes.getNamedItem('width').value);
-						var y2 = y1 + Number(node.attributes.getNamedItem('height').value);
-						var opacity=1.0, stroke, strokeWidth, fill;
-						if(node.hasAttribute('opacity')) opacity = node.attributes.getNamedItem("opacity").value;
+						if(node.hasAttribute('x')) x1 = +node.attributes.getNamedItem('x').value;
+						if(node.hasAttribute('y')) y1 = +node.attributes.getNamedItem('y').value;
+						var x2 = x1 + +(node.attributes.getNamedItem('width').value);
+						var y2 = y1 + +(node.attributes.getNamedItem('height').value);
+						var opacity = 1.0, stroke, strokeWidth, fill;
+						if(node.hasAttribute('opacity')) opacity = +node.attributes.getNamedItem("opacity").value;
 						if(node.hasAttribute('stroke')) stroke = Svg.parseStyle(node.attributes.getNamedItem('stroke').value);
-						if(node.hasAttribute('stroke-width')) strokeWidth = node.attributes.getNamedItem('stroke-width').value;
+						if(node.hasAttribute('stroke-width')) strokeWidth = +node.attributes.getNamedItem('stroke-width').value;
 						if(node.hasAttribute('fill')) fill = Svg.parseStyle(node.attributes.getNamedItem('fill').value);
 						else fill = 'rgb(0,0,0)';
 						
@@ -3427,12 +3542,12 @@ try{
 				//if(_f.traceDiv && _f.clearTraceOnFrame) trace("", true);
 				this.dispatchEvent(new Event(Event.ENTER_FRAME));
 				
-				this._fps = Number(1000 / (Utils.getTimer() - this._last_time));
+				this._fps = 1000 / (Utils.getTimer() - this._last_time);
 				this._last_time = Utils.getTimer();
 				while(this._fps_throttle.length > 10) this._fps_throttle.pop();
 				
 				// throttling needs more work. it only half helps.
-				this._fps_throttle.unshift(Number(_f.stage.fps - this.fps));
+				this._fps_throttle.unshift(_f.stage.fps - this.fps);
 			}
 		}
 		
@@ -3513,6 +3628,7 @@ try{
 		this._canvas = undefined;
 		this._context = "2d";
 		this._currentMouseTarget = undefined;
+		this._draw_stage_objects = false;
 		this._focusManager = new com.flanvas.managers.FocusManager(this);
 		this._fps = 24;
 		this._lastKeyDownEvent = undefined;
@@ -3624,6 +3740,13 @@ try{
 		this.__defineGetter__('ctx', function() {
 			return this.canvas.getContext(this._context);
 		});
+		this.__defineGetter__('drawStageObjects', function() {
+			return self._draw_stage_objects;
+		});
+		this.__defineSetter__('drawStageObjects', function(bool) {
+			self._draw_stage_objects = bool;
+			self.invalidate();
+		});
 		this.__defineGetter__('focus', function() {
 			return this._focusManager.getFocus();
 		});
@@ -3634,7 +3757,7 @@ try{
 			return this._fps;
 		});
 		this.__defineSetter__('fps', function(val) {
-			this._fps = val;
+			this._fps = +val;
 		});
 		this.__defineGetter__('mouseX', function() {
 			return this._mouse_x;
@@ -3769,8 +3892,8 @@ try{
 		if(isNaN(x)) throw new ArgumentError("x must be a Number.");
 		if(isNaN(y)) throw new ArgumentError("y must be a Number.");
 		
-		this.x = Number(x);
-		this.y = Number(y);
+		this.x = +x;
+		this.y = +y;
 	}
 	
 	/**
@@ -3802,8 +3925,8 @@ try{
 		return str;
 	}
 	/**
-	 * @param url The URL you want to have loaded via XHR
-	 * @param func the function you want to be assigned to onreadystatechange
+	 * @param url:String The URL you want to have loaded via XHR
+	 * @param func:Function the function you want to be assigned to onreadystatechange
 	 */
 	Utils.xhr = function(url, func) {
 		var doc;
@@ -3923,15 +4046,16 @@ try{
 		
 		return str.replace(/'/g,'').replace(/\n|\r|\v|\t|\f|\0/g,'');
 	}
+	/**
+	 * creates a canvas that can be used or disposed
+	 * @param ctx:Boolean returns a canvas on false and returns a context on true. default is true.
+	 *
+	 * @return:* Returns a Canvas or Canvas.context depending on @ctx
+	 */
 	Utils.virtualContext = function(ctx) {
 		if(ctx === undefined) ctx = true;
 		if(ctx) return document.createElement('canvas').getContext('2d');
-		var c = document.createElement('canvas');
-		
-		// this is just a dumb fix for now
-		c.setAttribute("height", 550);
-		c.setAttribute("widht", 400);
-		return c;
+		return document.createElement('canvas');
 	}
 	
 	/**
