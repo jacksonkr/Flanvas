@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.1, SVG Export Plug-In  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+]>
+<svg instance-name="gameOverMenu"
+	 version="1.1"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 x="0px" y="0px" width="400px" height="600px" viewBox="0 0.233 400 600"
+	 overflow="visible" enable-background="new 0 0.233 400 600" xml:space="preserve">
+<defs>
+</defs>
+<rect opacity="0.6" width="400" height="600"/>
+<path fill="#FFFFFF" stroke="#000000" stroke-width="4" stroke-miterlimit="10" d="M327,381c0,1.104-0.896,2-2,2H75
+	c-1.104,0-2-0.896-2-2V141c0-1.104,0.896-2,2-2h250c1.104,0,2,0.896,2,2V381z"/>
+<text transform="matrix(1 0 0 1 83.001 184.9053)" fill="#666666" font-family="'Arial-BoldMT'" font-size="36.2685">GAME OVER!</text>
+<text transform="matrix(1 0 0 1 105.2803 229.2334)"><tspan x="0" y="0" fill="#4D4D4D" font-family="'ArialMT'" font-size="12">Enter a nickname below to see how</tspan><tspan x="12.674" y="14.399" fill="#4D4D4D" font-family="'ArialMT'" font-size="12">you rank against other players:</tspan></text>
+<path fill="#FFFFFF" stroke="#000000" stroke-miterlimit="10" d="M301.5,287.203c0,0.716-0.896,1.297-2,1.297h-199
+	c-1.104,0-2-0.581-2-1.297v-31.406c0-0.716,0.896-1.297,2-1.297h199c1.104,0,2,0.581,2,1.297V287.203z"/>
+<text instance-name="yourNameTxt" transform="matrix(1 0 0 1 124.3491 280.2158)" fill="#FF00FF" font-family="'Arial-BoldMT'" font-size="23.7785">YOUR NAME</text>
+<path instance-name="submitBtn" fill="#4D4D4D" d="M196,369c0,1.104-0.896,2-2,2H89c-1.104,0-2-0.896-2-2v-33c0-1.104,0.896-2,2-2h105c1.104,0,2,0.896,2,2V369
+	z"/>
+<text transform="matrix(1 0 0 1 112.5 357.2334)" fill="#FFFFFF" font-family="'ArialMT'" font-size="14">SUBMIT</text>
+<path instance-name="quitBtn" fill="#4D4D4D" d="M315,369c0,1.104-0.896,2-2,2H208c-1.104,0-2-0.896-2-2v-33c0-1.104,0.896-2,2-2h105c1.104,0,2,0.896,2,2
+	V369z"/>
+<text transform="matrix(1 0 0 1 244 357.2334)" fill="#FFFFFF" font-family="'ArialMT'" font-size="14">QUIT</text>
+</svg>
