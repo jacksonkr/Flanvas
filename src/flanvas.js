@@ -2944,18 +2944,24 @@ try{
 							var code = String(String(d[k]).substr(0, 1));
 							
 							// make an array of all the points and cast all points as numbers
+							pt = null;
 							var pt = String(String(d[k]).substr(1)).split(',');
+							var asdf = String(String(d[k]).substr(1)).split(',');
 							for(var m = 0; m < pt.length; m++) {
-								if(isNaN(+pt[m])) throw new Error("point is NaN. Svg->parseXML->'path'; " + pt[m]);
-								
-								pt[m] = +pt[m];
+								try {
+									pt[m] = +pt[m];
+								} catch (e) {
+									throw new Error(e + "; Svg->parseXML->'path'; " + pt[m])
+								}
 							}
+							var pt = [0,0,0,0,0,0];
+							console.log(pt[0], pt);
 							
 							// keep the last documented point handy (for relative draw instructions)
 							var lp = o.graphics.points(-1)[0];
 							if(!lp) lp = new Point(0, 0);
 							
-							// keep the last document control point handy too
+							// keep the last documented control point handy too
 							var lcp;
 							if(control_Points.length) lcp = control_Points[control_Points.length - 1];
 
@@ -3027,7 +3033,7 @@ try{
 									pt[4] = c2.x;
 									pt[5] = c2.y;
 									
-									//o.graphics.lineTo(pt[4], pt[5]);
+									//o.graphics.lineTo(pt[4], pt[5]); // use this for pseugo (illustration)
 									o.graphics.bezierCurveTo(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]);
 									control_Points.push(c0);
 									control_Points.push(c1);
