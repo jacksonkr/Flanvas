@@ -448,7 +448,7 @@ try{
 		
 		this._listeners.push({
 			"type":type, 
-			"listener":listener, 
+			"listener":listener,
 			"useCapture":useCapture,
 			"priority":priority,
 			"target":null,
@@ -695,6 +695,9 @@ try{
 			self.invalidate();
 		});
 		this.__defineGetter__('height', function() {
+			if(this._boundingBox.width > -Infinity) return this._boundingBox.width * this.absScaleX;
+
+			//when height is not immediately available via the bounding box, use this as a plan b
 			var r = new Rectangle(0, 0, 0, 0);
 			if(self._children) {
 				for(var c = 0; c < self._children.length; ++c) {
@@ -780,6 +783,9 @@ try{
 			this._boundsValidated = false;
 		});
 		this.__defineGetter__('width', function() {
+			if(this._boundingBox.width > -Infinity) return this._boundingBox.width * this.absScaleX;
+
+			//when width is not immediately available via the bounding box, use this as a plan b
 			var r = new Rectangle(0, 0, 0, 0);
 			if(this._children) {
 				for(var c = 0; c < this._children.length; ++c) {
@@ -1043,10 +1049,10 @@ try{
 										var self = this;
 										this._source.setAttribute("id", this.name);
 										var defaultStyle = function() {
-											self._source.setAttribute("style", "display:block; border:1px solid gray; margin:2px 0;");
+											self._source.setAttribute("style", "display:block; border:1px dotted gray; margin:2px 0; padding:5px;");
 										};
 										this._source.addEventListener("mouseover", function(){
-											self._source.setAttribute("style", "display:block; border:none; margin:3px 1px;");
+											self._source.setAttribute("style", "display:block; border:none; margin:3px 1px; padding:5px;");
 										});
 										this._source.addEventListener("mouseout", defaultStyle);
 										defaultStyle();
@@ -1193,6 +1199,22 @@ try{
 		pt.absx = this.absX;
 		return pt;
 	}
+	com.flanvas.display.DisplayObject.prototype.hitTestPoint = function(x, y, shapeFlag) {
+		if(shapeFlag === undefined) shapeFlag = false;
+
+		if(!shapeFlag) {
+			if(x > this._boundingBox.x
+			&& x < this.width + this._boundingBox.x
+			&& y > this._boundingBox.y
+			&& y < this.height + this._boundingBox.y) {
+				return true;
+			}
+		} else {
+			throw new Error("Performing a hit test by pixel has not been implemented yet.");
+		}
+
+		return false;
+	}
 	com.flanvas.display.DisplayObject.prototype.invalidate = function() {
 		this._validated = false;
 	}
@@ -1231,8 +1253,22 @@ try{
 			o = o.parent;
 		}
 		
-		// move this to an array of [x,y] as it will be a bit faster
-		return {'x':to_x + this._sourceOffset.x, 'y':to_y + this._sourceOffset.y};
+		// !! move this to an array of [x,y] as it will be a bit faster
+		var r = {'x':to_x, 'y':to_y};
+
+		// code below was messing up relative path instructions for SVG
+		/*if(this._sourceOffset.x == Infinity) {
+			this._sourceOffset.x = this.x;
+			throw new Error("A source offset property is Infinity");
+		}
+		if(this._sourceOffset.y == Infinity) {
+			this._sourceOffset.y = this.y;
+			throw new Error("A source offset property is Infinity");
+		}
+		r.x += this._sourceOffset.x;
+		r.y += this._sourceOffset.y;*/
+
+		return r;
 	}
 	com.flanvas.display.DisplayObject.prototype.updateBoundingBox = function() {
 		this._boundsValidated = true;
@@ -1309,15 +1345,18 @@ try{
 					ctx.font = this.font;
 					var w = ctx.measureText(this.text).width;
 					var h = +this.size.replace(/\D/g, ''); // get the line height
-					try {
-						h *= this.size.match(/\n/g).length || 1;
-					} catch (e) {}
+					var m = this.size.match(/\n/g);
+					if(m && m.length > 0) h *= m.length;
 					h += this.padding.bottom;
 					
+					// !! THE NEXT TWO LINES ARE PROBABLY WRONG
+					this._boundingBox.x = 0;
+					this._boundingBox.y = 0;
+
 					if(w > this._boundingBox.width) this._boundingBox.width = w;
 					if(h > this._boundingBox.height) this._boundingBox.height = h;
 
-					delete ctx;
+					ctx = null;
 				break;
 			}
 		}
@@ -1496,11 +1535,6 @@ try{
 		this.graphics.instruction("if(this._shear.m11) ctx.transform(this._shear.m11, this._shear.m12, this._shear.m21, this._shear.m22, 0, 0);");
 	}
 	com.flanvas.display.Bitmap.extend(com.flanvas.display.DisplayObject);
-	com.flanvas.display.Bitmap.prototype.isMouseTarget = function() {
-		var x_pass = ((this.mouseX > 0) && (this.mouseX < this.width));
-		var y_pass = ((this.mouseY > 0) && (this.mouseY < this.height));
-		return (x_pass && y_pass);
-	}
 	com.flanvas.display.Bitmap.prototype.shear = function() {
 		// m21 controls the overall skew
 		this._shear.m11 = 1;
@@ -1521,6 +1555,14 @@ try{
 	}
 	com.flanvas.display.InteractiveObject.prototype._construct = function() {
 		this._is_mouse_in_path = false;
+		this._mouse_enabled = true;
+
+		this.__defineGetter__('mouseEnabled', function() {
+			return this._mouse_enabled;
+		});
+		this.__defineSetter__('mouseEnabled', function(bool) {
+			this._mouse_enabled = bool;
+		});
 		
 		var self = this;
 		this.addEventListener(FocusEvent.FOCUS_IN, function(event) {});
@@ -1544,11 +1586,15 @@ try{
 	}
 	com.flanvas.display.InteractiveObject.extend(com.flanvas.display.DisplayObject);
 	com.flanvas.display.InteractiveObject.prototype.isMouseTarget = function() {
-		if(this._is_mouse_in_path) return this._is_mouse_in_path;
-		
+		if(!this.mouseEnabled) return false;
+		//if(this._is_mouse_in_path) return true;
+
+		if(this.numChildren <= 0) return this.hitTestPoint(this.mouseX, this.mouseY, false);
+
 		for(var i = 0; i < this.numChildren; ++i) {
 			var c = this.getChildAt(i);
 			if(c.isMouseTarget()) return c;
+			//if(c.hitTestPoint(c.mouseX, c.mouseY, false)) return c;
 		}
 		
 		return false
@@ -1909,11 +1955,6 @@ try{
 	}
 	com.flanvas.text.TextField.prototype.cursorVisibilityToggle = function() {
 		this._cursor_visible = !this._cursor_visible;
-	}
-	com.flanvas.text.TextField.prototype.isMouseTarget = function() {
-		var x_pass = ((this.mouseX > 0) && (this.mouseX < this.width + com.flanvas.text.TextField.PADDING.left + com.flanvas.text.TextField.PADDING.right));
-		var y_pass = ((this.mouseY > 0) && (this.mouseY < this.height + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom));
-		return (x_pass && y_pass);
 	}
 	com.flanvas.text.TextField.prototype.replaceText = function(beginIndex, endIndex, newText) {
 		
@@ -2946,7 +2987,6 @@ try{
 							// make an array of all the points and cast all points as numbers
 							pt = null;
 							var pt = String(String(d[k]).substr(1)).split(',');
-							var asdf = String(String(d[k]).substr(1)).split(',');
 							for(var m = 0; m < pt.length; m++) {
 								try {
 									pt[m] = +pt[m];
@@ -2954,8 +2994,7 @@ try{
 									throw new Error(e + "; Svg->parseXML->'path'; " + pt[m])
 								}
 							}
-							var pt = [0,0,0,0,0,0];
-							console.log(pt[0], pt);
+							//console.log(instance_name, pt.slice());
 							
 							// keep the last documented point handy (for relative draw instructions)
 							var lp = o.graphics.points(-1)[0];
@@ -3011,12 +3050,7 @@ try{
 									var C0 = p.globalToLocal(new Point(pt[0] - o.x, pt[1] - o.y));
 									var C1 = p.globalToLocal(new Point(pt[2] - o.x, pt[3] - o.y));
 									var C2 = p.globalToLocal(new Point(pt[4] - o.x, pt[5] - o.y));
-									pt[0] = C0.x;
-									pt[1] = C0.y;
-									pt[2] = C1.x;
-									pt[3] = C1.y;
-									pt[4] = C2.x;
-									pt[5] = C2.y;
+									pt = [c0.x,c0.y,c1.x,c1.y,c2.x,c2.y];
 									
 									o.graphics.bezierCurveTo(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]);
 									control_Points.push(C0);
@@ -3026,15 +3060,10 @@ try{
 									var c0 = new Point(lp.x + pt[0], lp.y + pt[1]);
 									var c1 = new Point(lp.x + pt[2], lp.y + pt[3]);
 									var c2 = new Point(lp.x + pt[4], lp.y + pt[5]);
-									pt[0] = c0.x;
-									pt[1] = c0.y;
-									pt[2] = c1.x;
-									pt[3] = c1.y;
-									pt[4] = c2.x;
-									pt[5] = c2.y;
+									pt = [c0.x,c0.y,c1.x,c1.y,c2.x,c2.y];
 									
-									//o.graphics.lineTo(pt[4], pt[5]); // use this for pseugo (illustration)
-									o.graphics.bezierCurveTo(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]);
+									o.graphics.lineTo(pt[4], pt[5]); // use this for pseudo-curve (testing)
+									//o.graphics.bezierCurveTo(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]);
 									control_Points.push(c0);
 									control_Points.push(c1);
 								break;
@@ -3044,10 +3073,7 @@ try{
 									var S1 = p.globalToLocal(new Point(pt[2] - o.x, pt[3] - o.y));
 									
 									var cp = new Point(lp.x + (lcp.x - lp.x) * -1, lp.y + (lcp.y - lp.y) * -1);
-									pt[0] = S0.x;
-									pt[1] = S0.y;
-									pt[2] = S1.x;
-									pt[3] = S1.y;
+									pt = [S0.x,S0.y,S1.x,S1.y];
 									
 									o.graphics.bezierCurveTo(cp.x, cp.y, pt[0], pt[1], pt[2], pt[3]);
 									control_Points.push(cp);
@@ -3058,10 +3084,7 @@ try{
 									var s1 = new Point(lp.x + pt[2], lp.y + pt[3]);
 									
 									var cp = new Point(lp.x + (lcp.x - lp.x) * -1, lp.y + (lcp.y - lp.y) * -1);
-									pt[0] = s0.x;
-									pt[1] = s0.y;
-									pt[2] = s1.x;
-									pt[3] = s1.y;
+									pt = [s0.x,s0.y,s1.x,s1.y];
 									
 									o.graphics.bezierCurveTo(cp.x, cp.y, pt[0], pt[1], pt[2], pt[3]);
 									control_Points.push(cp);
@@ -3659,6 +3682,7 @@ try{
 			}
 			
 			if((new RegExp('iphone|ipod|ipad', 'i')).test(navigator.userAgent)) {
+			//if(navigator.userAgent.match(/iphone|ipod|ipad/i)) {
 				//enables "mouse" for iphone
 				var touchType = function(event) {
 					if(event.targetTouches[0]) return "targetTouches";
@@ -3711,27 +3735,27 @@ try{
 			 */
 			this.keyDownHandler = function(event) {
 				event.stopPropagation();
-				event.preventDefault();
+				//event.preventDefault();
 				self._lastKeyDownEvent = event;
 			}
 			this.keyUpHandler = function(event) {
 				event.stopPropagation();
-				event.preventDefault();
+				//event.preventDefault();
 				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
 			}
 			this.keyPressHandler = function(event) {
 				event.stopPropagation();
-				event.preventDefault();
+				//event.preventDefault();
 				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, self._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
 			}
 
 			document.addEventListener('click', function(event) {
-				if(event.target == self._canvas) {
+				if(event.target === self._canvas) {
 					if(!self._keyboard_attached) {
 						document.addEventListener('keydown', self.keyDownHandler, false);
 						document.addEventListener('keypress', self.keyPressHandler, false);
 						document.addEventListener('keyup', self.keyUpHandler, false);
-						self._keyboard_attached = true
+						self._keyboard_attached = true;
 					}
 				} else {
 					document.removeEventListener('keydown', self.keyDownHandler);
@@ -3811,9 +3835,10 @@ try{
 	 */
 	com.flanvas.display.Stage.prototype.findMouseTarget = function(obj) {
 		if(obj === undefined) obj = this;
-		
+
+		// on no children close w/out processing.
 		if(!obj.numChildren) return obj;
-		
+
 		for(var i = obj.numChildren - 1; i >= 0; --i) {
 			try {
 				if(obj.getChildAt(i).isMouseTarget()) return this.findMouseTarget(obj.getChildAt(i));
