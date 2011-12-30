@@ -80,9 +80,9 @@ EnemyShip.prototype.displayWord = function() {
 	this.fadedTxt.textColor = 0xcccccc;
 	this.fadedTxt.autoSize = TextFieldAutoSize.RIGHT;
 	this.fadedTxt.x = -10;
-	this.fadedTxt.y = 3;
+	this.fadedTxt.y = -7;
 	
-	this.wordTxt.textColor = 0x000000;
+	this.wordTxt.textColor = 0xff00ff;
 	this.wordTxt.autoSize = TextFieldAutoSize.RIGHT;
 	this.wordTxt.x = this.fadedTxt.x;
 	this.wordTxt.y = this.fadedTxt.y;
@@ -204,7 +204,6 @@ function PlayerShip() {
 }
 PlayerShip.prototype._construct = function() {
 	this._speed = 0;
-	this._shootSound = new Sound('assets/PulseShot.mp3');
 	
 	this.graphics.beginFill(0x000000);
 	this.graphics.drawRect(-10, -10, 20, 20);
@@ -212,6 +211,7 @@ PlayerShip.prototype._construct = function() {
 }
 PlayerShip.extend(Ship);
 PlayerShip.prototype.shoot = function(target) {
+	this._shootSound = new Sound('assets/PulseShot.mp3');
 	this._shootSound.play();
 	var b = new Bullet(this, target);
 }
@@ -221,7 +221,7 @@ function ZtypeRemix() {
 }
 ZtypeRemix.prototype._construct = function() {
 	this._gameOver;
-	this.level = 1;
+	this.level = 11;
 	this._score = 0;
 	this._multiplier = 1;
 	this._bomb = false;
@@ -294,8 +294,8 @@ ZtypeRemix.prototype._construct = function() {
 						// find a new target to shoot
 						ptr.enemyShips.sort(function(a,b) {
 							//sort by closest
-							if(a.distanceToTarget < b.distanceToTarget) 1;
-							if(b.distanceToTarget < a.distanceToTarget) -1;
+							if(a.distanceToTarget < b.distanceToTarget) return 1;
+							if(b.distanceToTarget < a.distanceToTarget) return -1;
 							return 0;
 						});
 						loop:
@@ -473,6 +473,7 @@ ZtypeRemix.prototype.showStartMenu = function(bool) {
 			this.addChild(this.startMenu);
 			var ptr = this;
 			this.startMenu.contentLoaderInfo.addEventListener(Event.COMPLETE, function(event) {
+				event.target.loader.content.startMenu.startGameTxt.mouseEnabled = false;
 				var startBtn = event.target.loader.content.startMenu.startBtn;
 				startBtn.useHandCursor = true;
 				startBtn.buttonMode = true;
@@ -500,7 +501,7 @@ window.onload = function() {
 	//_f.traceDraw = true;
 	stage.canvas = document.getElementById('ztype-remix');
 	stage.fps = 24;
-	stage.drawStageObjects = true;
+	//stage.drawStageObjects = true;
 
 	game = stage.addChild(new ZtypeRemix());
 }
@@ -509,9 +510,10 @@ window.onload = function() {
 body {
 	margin:0;
 }
+</style>
 </head>
 
 <body>
-<canvas id="ztype-remix" width="400" height="600"></canvas>
+	<canvas id="ztype-remix" width="400" height="600"></canvas>
 </body>
 </html>

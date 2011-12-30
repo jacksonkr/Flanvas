@@ -7,7 +7,6 @@
 <script src="../src/flanvas.js" type="text/javascript"></script>
 <script type="text/javascript">
 window.onload = function() {
-	_f.traceDiv = document.getElementById("trace");
 	//_f.clearTraceOnFrame = false;
 	//_f.traceDraw = true;
 	stage.canvas = document.getElementById('myCanvas');
@@ -17,10 +16,9 @@ window.onload = function() {
 		this._construct();
 	}
 	FunBox.prototype._construct = function() {
-		this.x = Math.random() * (stage.stageWidth - this.width);
-		this.y = Math.random() * (stage.stageHeight - this.height);
 		
 		// something is off with the alpha. the more items you have, the heavier the alpha is. weird..
+		//this.drawBoundingBox = true;
 		this.graphics.fillStyle("rgba(200,200,200,1.0)");
 		var diff = Math.random() * 50;
 		this.graphics.drawRect(-10 - diff / 2, -10 - diff / 2, 20 + diff, 20 + diff);
@@ -59,10 +57,13 @@ window.onload = function() {
 			event.target.scaleX = 1.2;
 			event.target.scaleY = 1.2;
 		});
+
+		this.x = Math.random() * (stage.stageWidth - this.width);
+		this.y = Math.random() * (stage.stageHeight - this.height);
 	}
 	FunBox.extend(Sprite);
 	
-	for(var i = 0; i < 30; ++i) {
+	for(var i = 0; i < 100; ++i) {
 		stage.addChild(new FunBox());
 	}
 	
@@ -93,7 +94,7 @@ window.onload = function() {
 	 * trace fps
 	 */
 	stage.addEventListener(Event.ENTER_FRAME, function(event) {
-		trace(Math.ceil(_f.intervalManager.fps) + " fps");
+		//trace(Math.ceil(_f.intervalManager.fps) + " fps");
 	});
 	
 	/*
