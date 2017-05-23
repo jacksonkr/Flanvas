@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Polymorphism</title>
+
+<script src="../src/flanvas.js" type="text/javascript"></script>
+<script type="text/javascript">
+window.onload = function() {
+	stage.canvas = document.getElementById('myCanvas');
+	
+	function A() {
+		this.val += "A";
+	}
+	A.prototype.babble = function() {
+		trace("class:", this.constructor.name, "hierarchy:", this.val.replace('undefined', ''));
+	}
+
+	function B() {
+		this.val += "B";
+		this.supe();
+	}
+	B.extend(A);
+	B.prototype.babble = function() {
+		this.supe().prototype.babble.apply(this);
+	}
+
+	function C() {
+		this.val += "C";
+		this.supe();
+	}
+	C.extend(B);
+	C.prototype.babble = function() {
+		this.supe().prototype.babble.apply(this);
+	}
+
+	var a = new A();
+	a.babble();
+
+	var b = new B();
+	b.babble();
+
+	var c = new C();
+	c.babble();
+	
+	function One() {
+		this._construct();
+	}
+	One.prototype._construct = function() {
+		this.val += "1"
+	}
+	One.prototype.babble = function() {
+		trace("class:", this.constructor.name, "hierarchy:", this.val.replace('undefined',''));
+	}
+
+	function Two() {
+		this._construct();
+	}
+	Two.prototype._construct = function() {
+		this.val += "2"
+	}
+	Two.extend(One);
+	Two.prototype.babble = function() {
+		this.supe().prototype.babble.apply(this);
+	}
+
+	function Three() {
+		this._construct();
+	}
+	Three.prototype._construct = function() {
+		this.val += "3"
+	}
+	Three.extend(Two);
+	Three.prototype.babble = function() {
+		this.supe().prototype.babble.apply(this);
+	}
+
+	var one = new One();
+	one.babble();
+
+	var two = new Two();
+	two.babble();
+
+	var three = new Three();
+	three.babble();
+}
+</script>
+</head>
+
+<body>
+
+<canvas id="myCanvas" width="550" height="450" style="position:relative; left:0; top:0;"></canvas>
+
+</body>
+</html>

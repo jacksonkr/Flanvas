@@ -61,52 +61,80 @@ try{
 	/**
 	 * Recieved ideas for inheritence from the web (google)
 	 */
-	Function.prototype.extend = function(c) {
-		try {
-			var funcToStr = function(str) {
-				var args = String(str);
-				args = args.substr(0, args.indexOf('\n'));
-				args = args.substr(args.indexOf('(') + 1);
-				args = args.substr(0, args.lastIndexOf(')'));
+	// window.supers = [];
+	// Function.prototype.extend = function(c) {
+	// 	try {
+	// 		var constr = this.prototype._construct;
+	// 		var d = {}, p = (this.prototype = new c());
+	// 	    this.supe = function (name) {
+	// 	        if (!(name in d)) {
+	// 	            d[name] = 0;
+	// 	        }        
+	// 	        var f, r, t = d[name], v = parent.prototype;
+	// 	        if (t) {
+	// 	            while (t) {
+	// 	                v = v.constructor.prototype;
+	// 	                t -= 1;
+	// 	            }
+	// 	            f = v[name];
+	// 	        } else {
+	// 	            f = p[name];
+	// 	            if (f == this[name]) {
+	// 	                f = v[name];
+	// 	            }
+	// 	        }
+	// 	        d[name] += 1;
+	// 	        r = f.apply(this, Array.prototype.slice.apply(arguments, [1]));
+	// 	        d[name] -= 1;
+	// 	        //return r;
+	// 	    };
+	// 	    // return this
+	// 	    this.prototype._construct = constr;
+
+	// 		var funcToStr = function(str) {
+	// 			var args = String(str);
+	// 			args = args.substr(0, args.indexOf('\n'));
+	// 			args = args.substr(args.indexOf('(') + 1);
+	// 			args = args.substr(0, args.lastIndexOf(')'));
 				
-				var bod = String(str)
-				bod = bod.replace(/function\s*\(.*\)\s*{(.*)/,'$1');
-				//bod = bod.substr(bod.indexOf('\n') + 1);
-				bod = bod.substr(0, bod.lastIndexOf('}'));
+	// 			var bod = String(str);
+	// 			bod = bod.replace(/function\s*\(.*\)\s*{(.*)/,'$1');
+	// 			//bod = bod.substr(bod.indexOf('\n') + 1);
+	// 			bod = bod.substr(0, bod.lastIndexOf('}'));
 				
-				return {"args":args, "str":bod};
-			}
+	// 			return {"args":args, "str":bod};
+	// 		}
 			
-			if(c.name != "Object") {
-				var f1 = funcToStr(c.prototype._construct);
-				var f2 = funcToStr(this.prototype._construct);
+	// 		if(c.name != "Object") {
+	// 			var f1 = funcToStr(c.prototype._construct);
+	// 			var f2 = funcToStr(this.prototype._construct);
 				
-				var h = f2.args || f1.head;
+	// 			var h = f2.args || f1.head;
 				
-				//trace(f2.args, f1.str, f2.str);
-				eval('this.prototype._construct = function('+f2.args+') {\n'+f1.str+f2.str+'}');
-			}
+	// 			//trace(f2.args, f1.str, f2.str);
+	// 			eval('this.prototype._construct = function('+f2.args+') {\n'+f1.str+f2.str+'}');
+	// 		}
 			
-			var old = this.prototype;
+	// 		var old = this.prototype;
 			
-			for(var i in c.prototype) {
-				if(i != "_construct") this.prototype[i] = c.prototype[i];
-			}
+	// 		for(var i in c.prototype) {
+	// 			if(i != "_construct") this.prototype[i] = c.prototype[i];
+	// 		}
+
+	// 		//this.prototype.supe = c;
+	// 		this.prototype.constructor = old.constructor;
 			
-			//this.prototype.super = c;
-			this.prototype.constructor = old.constructor;
-			
-			// if the class has a custom toString method, keep it. Otherwise use this default one.
-			if(String(this.prototype.toString).replace(/^\s*|\s*$/g,'').indexOf("[native code]") >= 0) {
-				this.prototype.toString = function() {
-					// this.constructor.name is not bringing back anything :(
-					return "[Object " + (this.constructor.name || "Object") + "]";
-				}
-			}
-		} catch(e) {
-			alert('Function.extend; ' + e);
-		}
-	}
+	// 		// if the class has a custom toString method, keep it. Otherwise use this default one.
+	// 		if(String(this.prototype.toString).replace(/^\s*|\s*$/g,'').indexOf("[native code]") >= 0) {
+	// 			this.prototype.toString = function() {
+	// 				// this.constructor.name is not bringing back anything :(
+	// 				return "[Object " + (this.constructor.name || "Object") + "]";
+	// 			}
+	// 		}
+	// 	} catch(e) {
+	// 		console.warn('Function.extend; ' + e);
+	// 	}
+	// }
 	
 	// setup simple namespace
 	var com = {};
@@ -165,30 +193,30 @@ try{
 	/**
 	 * ListCollectionView Class
 	 */
-	function ListCollectionView(list) {
-		this._construct(list);
+	class ListCollectionView extends Object {
+		constructor(list) {
+			super();
+
+			this._list = list;
+			this._localIndex = 0;
+			
+			this.__defineGetter__('length', function() {
+				return this._list.length;
+			});
+			this.__defineGetter__('list', function() {
+				return this._list
+			});
+			this.__defineSetter__('list', function() {
+				throw new Error('not implemented yet');
+			});
+			this.__defineGetter__('sort', function() {
+				throw new Error('not implemented yet');
+			});
+			this.__defineSetter__('sort', function() {
+				throw new Error('not implemented yet');
+			});
+		}
 	}
-	ListCollectionView.prototype._constuct = function(list) {
-		this._list = list;
-		this._localIndex = 0;
-		
-		this.__defineGetter__('length', function() {
-			return this._list.length;
-		});
-		this.__defineGetter__('list', function() {
-			return this._list
-		});
-		this.__defineSetter__('list', function() {
-			throw new Error('not implemented yet');
-		});
-		this.__defineGetter__('sort', function() {
-			throw new Error('not implemented yet');
-		});
-		this.__defineSetter__('sort', function() {
-			throw new Error('not implemented yet');
-		});
-	}
-	ListCollectionView.extend(Object);
 	ListCollectionView.prototype.addAll = function(addList) {
 		throw new Error('not implemented yet');
 	}
@@ -251,13 +279,13 @@ try{
 	/**
 	 * ArrayCollection Class
 	 */
-	function ArrayCollection(arr) {
-		this._construct(arr);
+	ArrayCollection = class extends ListCollectionView {
+		constructor() {
+			super();
+
+			this.source = arr;
+		}
 	}
-	ArrayCollection.prototype._construct = function(arr) {
-		this.source = arr;
-	}
-	ArrayCollection.extend(ListCollectionView);
 	
 	/**
 	 * FocusManager Class
@@ -289,34 +317,32 @@ try{
 	/**
 	 * BitmapData Class
 	 */
-	function BitmapData(width, height, transparent, fillColor) {
-		this._construct(width, height, transparent, fillColor);
+	BitmapData = class extends Object {
+		constructor(width, height, transparent, fillColor) {
+			this._alpha = 1.0;
+			this._imageData = undefined;
+			this._source = undefined;
+			
+			this.__defineGetter__('alpha', function() {
+				return this._alpha;
+			});
+			this.__defineSetter__('alpha', function(val) {
+				this._alpha = +val;
+				var spread = 4;
+				for(var i = 0; i < this._imageData.data.length / spread; ++i) {
+					this._imageData.data[i*spread + 3] = this._alpha * 255;
+				}
+			});
+			this.__defineGetter__('height', function() {
+				if(this._imageData) return this._imageData.height;
+				return 0;
+			});
+			this.__defineGetter__('width', function() {
+				if(this._imageData) return this._imageData.width;
+				return 0;
+			});
+		}
 	}
-	BitmapData.prototype._construct = function(width, height, transparent, fillColor) {
-		this._alpha = 1.0;
-		this._imageData = undefined;
-		this._source = undefined;
-		
-		this.__defineGetter__('alpha', function() {
-			return this._alpha;
-		});
-		this.__defineSetter__('alpha', function(val) {
-			this._alpha = +val;
-			var spread = 4;
-			for(var i = 0; i < this._imageData.data.length / spread; ++i) {
-				this._imageData.data[i*spread + 3] = this._alpha * 255;
-			}
-		});
-		this.__defineGetter__('height', function() {
-			if(this._imageData) return this._imageData.height;
-			return 0;
-		});
-		this.__defineGetter__('width', function() {
-			if(this._imageData) return this._imageData.width;
-			return 0;
-		});
-	}
-	BitmapData.extend(Object);
 	BitmapData.prototype.draw = function(source) {
 		this._source = source;
 		var ctx = stage.ctx;
@@ -352,114 +378,110 @@ try{
 	/**
 	 * Error Class
 	 */
-	function Error(msg) {
-		this._construct(msg);
-	}
-	Error.prototype._construct = function(msg) {
-		this._msg;
-		
-		try {
-			// need to trip the try/catch in order to get an error stack
-			just.tripping.the = "try/catch block";
-		} catch(e) {
-			var agent = navigator.userAgent.toLowerCase();
-			var arr = String(e.stack).split('\n');
-			
-			if(agent.indexOf("firefox") > -1) {
-				arr.pop();
-			}
-			if (agent.indexOf("chrome") > -1) {
-				arr.shift();
-			}
+	Error = class extends Object {
+		constructor(msg) {
+			super();
 
-			arr.shift();
-			arr.shift();
-			arr.unshift(msg);
-			this._msg = arr.join("\n-> ");
+			this._msg;
+		
+			try {
+				// need to trip the try/catch in order to get an error stack
+				just.tripping.the = "try/catch block";
+			} catch(e) {
+				var agent = navigator.userAgent.toLowerCase();
+				var arr = String(e.stack).split('\n');
+				
+				if(agent.indexOf("firefox") > -1) {
+					arr.pop();
+				}
+				if (agent.indexOf("chrome") > -1) {
+					arr.shift();
+				}
+
+				arr.shift();
+				arr.shift();
+				arr.unshift(msg);
+				this._msg = arr.join("\n-> ");
+			}
 		}
-	}
-	Error.extend(Object);
-	Error.prototype.toString = function() {
-		return this._msg;
+
+		toString() {
+			return this._msg;
+		}
 	}
 	
 	/**
 	 * ArgumentError class
 	 */
-	function ArgumentError(msg) {
-		this._construct(msg);
-	}
-	ArgumentError.prototype._construct = function(msg) {
-		//
-	}
-	ArgumentError.extend(Error);
+	ArgumentError = class extends Error {}
 	
 	/**
 	 * Rect Class
 	 */
-	function Rectangle(x, y, width, height) {
-		this._construct(x, y, width, height);
+	Rectangle = class extends Object {
+		constructor(x, y, width, height) {
+			super();
+
+			if(x === undefined) x = 0;
+			if(y === undefined) y = 0;
+			if(width === undefined) width = 0;
+			if(height === undefined) height = 0;
+			
+			this.x = x;
+			this.y = y;
+			this.width = width;
+			this.height = height;
+		}
 	}
-	Rectangle.prototype._construct = function(x, y, width, height) {
-		if(x === undefined) x = 0;
-		if(y === undefined) y = 0;
-		if(width === undefined) width = 0;
-		if(height === undefined) height = 0;
-		
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-	}
-	Rectangle.extend(Object);
 	
 	/**
 	 * com.flanvas.events.EventDispatcher Class
 	 * Have to declare this class out of order because it's the top level custom class :(
 	 */
-	com.flanvas.events.EventDispatcher = function() {
-		this._construct();
+	com.flanvas.events.EventDispatcher = class extends Object {
+		constructor() {
+			super();
+
+			this._interval_id = undefined;
+			this._listeners = [];
+			
+			var self = this;
+			if(_f) _f.intervalManager.addEventListener(Event.ENTER_FRAME, function(event) {
+				self.dispatchEvent(new Event(Event.ENTER_FRAME));
+			});
+		}
+
+		addEventListener(type, listener, useCapture, priority) {
+			if(!type) throw new ArgumentError("parameter type must be specified");
+			if(!listener) throw new ArgumentError("parameter listener must be specified");
+			if(useCapture === undefined) useCapture = false;
+			if(isNaN(priority)) priority = 0;
+				else if(priority < 0) throw new ArgumentError("parameter priority must be a valid integer");
+			
+			// check for duplicate listeners
+			for(var i = 0; i < this._listeners.length; ++i) {
+				var obj = this._listeners[i];
+				if((obj.type == type) && (obj.listener == listener)) return null;
+			}
+			
+			this._listeners.push({
+				"type":type, 
+				"listener":listener,
+				"useCapture":useCapture,
+				"priority":priority,
+				"target":null,
+				"currentTarget":this,
+			});
+			
+			// put higher numbers first
+			this._listeners.sort(function(a, b) {
+				return b.priority - a.priority;
+			});
+		}
 	}
-	com.flanvas.events.EventDispatcher.prototype._construct = function() {
-		this._interval_id = undefined;
-		this._listeners = [];
-		
-		var self = this;
-		if(_f) _f.intervalManager.addEventListener(Event.ENTER_FRAME, function(event) {
-			self.dispatchEvent(new Event(Event.ENTER_FRAME));
-		});
-	}
-	com.flanvas.events.EventDispatcher.extend(Object);
 	/**
 	 * using the capture phase doesn't actually work yet..
 	 */
-	com.flanvas.events.EventDispatcher.prototype.addEventListener = function(type, listener, useCapture, priority) {
-		if(!type) throw new ArgumentError("parameter type must be specified");
-		if(!listener) throw new ArgumentError("parameter listener must be specified");
-		if(useCapture === undefined) useCapture = false;
-		if(isNaN(priority)) priority = 0;
-			else if(priority < 0) throw new ArgumentError("parameter priority must be a valid integer");
-		
-		// check for duplicate listeners
-		for(var i = 0; i < this._listeners.length; ++i) {
-			var obj = this._listeners[i];
-			if((obj.type == type) && (obj.listener == listener)) return null;
-		}
-		
-		this._listeners.push({
-			"type":type, 
-			"listener":listener,
-			"useCapture":useCapture,
-			"priority":priority,
-			"target":null,
-			"currentTarget":this,
-		});
-		
-		// put higher numbers first
-		this._listeners.sort(function(a, b) {
-			return b.priority - a.priority;
-		});
-	}
 	com.flanvas.events.EventDispatcher.prototype.dispatchEvent = function(event) {
 		if(!event.target) event.target = this;
 		
@@ -501,7 +523,7 @@ try{
 	com.flanvas.filters.BitmapFilter.prototype._construct = function() {
 		//
 	}
-	com.flanvas.filters.BitmapFilter.extend(Object);
+	com.flanvas.filters.BitmapFilter = class extends Object {}
 	com.flanvas.filters.BitmapFilter.prototype.instruct = function(str) {
 		eval('var ctx = stage.canvas.getContext(stage._context)');
 		eval(str);
@@ -550,7 +572,7 @@ try{
 			this._offsetX = +val;
 		});
 	}
-	com.flanvas.filters.DropShadowFilter.extend(com.flanvas.filters.BitmapFilter);
+	com.flanvas.filters.DropShadowFilter = class extends com.flanvas.filters.BitmapFilter {}
 	com.flanvas.filters.DropShadowFilter.prototype.drawSelf = function() {
 		this.instruct('ctx.shadowOffsetX = this._offsetX;');
 		this.instruct('ctx.shadowOffsetY = this._offsetY;');
@@ -561,298 +583,301 @@ try{
 	/**
 	 * DisplayObject Class
 	 */
-	com.flanvas.display.DisplayObject = function() {
-		this._construct();
-	}
-	com.flanvas.display.DisplayObject.prototype._construct = function() {
-		this._alpha = 1.0;
-		/**
-		 * stores the Rect which is the absloute bounds of the box. 
-		 * This box ends when there is no longer visual data for the object.
-		*/
-		this._boundingBox = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
-		/**
-		 * When the bounds are validated, no bounding box is re-drawn.
-		 * Bounds need validation otherwise a bounding box will appear to be wrong when
-		 * a DisplayObject has be rotated. This happens because rotation does not trigger
-		 * a general validation so boundsValidated was born for this purpose.
-		 */
-		this._boundsValidated = false;
-		this._filters = [];
-		this._last_mouse_down_time = undefined;
-		this._mask = undefined;
-		this._mouse_x = 0;
-		this._mouse_y = 0;
-		this._name = "";
-		/** 
-		 * The Source Offset is the offset from 0,0 for the source context of a display item.
-		 * For example: When a circle is drawn, 3/4 of the circle is draw outside the visible
-		 * area of the source context. the Source Offset allows the context to grow in size, but
-		 * keep the relative position of the 0,0 for the object.
-		 */
-		this._sourceOffset = new Point(Infinity, Infinity);
-		this._rotation = 0;
-		this._root = undefined;
-		this._stage = undefined;
-		this._scale_x = 1.0;
-		this._scale_y = 1.0;
-		this._show_bounding_box = false;
-		this._show_origin = false;
-		/**
-		 * _source holds the source context (canvas element) for the original drawing of this item.
-		 * The _source is only changed with drawing requires validation (changing color, adding graphics, etc)
-		 */
-		this._source = Utils.virtualContext(false);
-		this._transform = new Transform();
-		this._x = 0;
-		this._y = 0;
-		this._validated = false;
-		
-		this.parent = undefined;
-		this.visible = true;
-		
-		var self = this;
-		this.__defineGetter__('absAlpha', function() {
-			if(this.parent) return this.parent.absAlpha * this.alpha;
-			return this.alpha;
-		});
-		this.__defineGetter__('absNumChildren', function() {
-		});
-		this.__defineGetter__('absDepth', function() {
-		});
-		this.__defineGetter__('absRotation', function() {
-			if(this.parent) return this.parent.absRotation + this.rotation;
-			return this.rotation;
-		});
-		this.__defineGetter__('absScaleX', function() {
-			if(this.parent) return this.parent.absScaleX * this.scaleX;
-			return this.scaleX;
-		});
-		this.__defineGetter__('absScaleY', function() {
-			if(this.parent) return this.parent.absScaleY * this.scaleY;
-			return this.scaleY;
-		});
-		this.__defineGetter__('absX', function() {
-			var dx = this.x;// + this.parent.absScaleX;
-			if(this.parent) {
-				var dy = this.y;// + this.parent.absScaleY;
-				// incorporate parent's rotation
-				var ld2p = Math.sqrt(dx*dx + dy*dy); // local
-				var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
-				var latan2 = Math.atan2(dy, dx); // local atan2 rads
-				
-				//local
-				return this.parent.absX + Math.cos(latan2 + gang) * ld2p;
-			}
-			return dx;
-		});
-		this.__defineGetter__('absY', function() {
-			var dy = this.y;// + this.parent.absScaleY;
-			if(this.parent) {
-				// incorporate parent's rotation
+	com.flanvas.display.DisplayObject = class extends com.flanvas.events.EventDispatcher {
+		constructor() {
+			super();
+
+			this._alpha = 1.0;
+			/**
+			 * stores the Rect which is the absloute bounds of the box. 
+			 * This box ends when there is no longer visual data for the object.
+			*/
+			this._boundingBox = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
+			/**
+			 * When the bounds are validated, no bounding box is re-drawn.
+			 * Bounds need validation otherwise a bounding box will appear to be wrong when
+			 * a DisplayObject has be rotated. This happens because rotation does not trigger
+			 * a general validation so boundsValidated was born for this purpose.
+			 */
+			this._boundsValidated = false;
+			this._filters = [];
+			this._last_mouse_down_time = undefined;
+			this._mask = undefined;
+			this._mouse_x = 0;
+			this._mouse_y = 0;
+			this._name = "";
+			/** 
+			 * The Source Offset is the offset from 0,0 for the source context of a display item.
+			 * For example: When a circle is drawn, 3/4 of the circle is draw outside the visible
+			 * area of the source context. the Source Offset allows the context to grow in size, but
+			 * keep the relative position of the 0,0 for the object.
+			 */
+			this._sourceOffset = new Point(Infinity, Infinity);
+			this._rotation = 0;
+			this._root = undefined;
+			this._stage = undefined;
+			this._scale_x = 1.0;
+			this._scale_y = 1.0;
+			this._show_bounding_box = false;
+			this._show_origin = false;
+			/**
+			 * _source holds the source context (canvas element) for the original drawing of this item.
+			 * The _source is only changed when drawing requires "validation" (changing color, adding graphics, etc)
+			 */
+			this._source = Utils.virtualContext(false);
+			this._transform;
+			this._x = 0;
+			this._y = 0;
+			this._validated = false;
+			
+			this.parent = undefined;
+			this.visible = true;
+			
+			var self = this;
+			this.__defineGetter__('absAlpha', function() {
+				if(this.parent) return this.parent.absAlpha * this.alpha;
+				return this.alpha;
+			});
+			this.__defineGetter__('absNumChildren', function() {
+			});
+			this.__defineGetter__('absDepth', function() {
+			});
+			this.__defineGetter__('absRotation', function() {
+				if(this.parent) return this.parent.absRotation + this.rotation;
+				return this.rotation;
+			});
+			this.__defineGetter__('absScaleX', function() {
+				if(this.parent) return this.parent.absScaleX * this.scaleX;
+				return this.scaleX;
+			});
+			this.__defineGetter__('absScaleY', function() {
+				if(this.parent) return this.parent.absScaleY * this.scaleY;
+				return this.scaleY;
+			});
+			this.__defineGetter__('absX', function() {
 				var dx = this.x;// + this.parent.absScaleX;
-				var ld2p = Math.sqrt(dx*dx + dy*dy); // local
-				var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
-				var latan2 = Math.atan2(dy, dx); // local atan2 rads
+				if(this.parent) {
+					var dy = this.y;// + this.parent.absScaleY;
+					// incorporate parent's rotation
+					var ld2p = Math.sqrt(dx*dx + dy*dy); // local
+					var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
+					var latan2 = Math.atan2(dy, dx); // local atan2 rads
+					
+					//local
+					return this.parent.absX + Math.cos(latan2 + gang) * ld2p;
+				}
+				return dx;
+			});
+			this.__defineGetter__('absY', function() {
+				var dy = this.y;// + this.parent.absScaleY;
+				if(this.parent) {
+					// incorporate parent's rotation
+					var dx = this.x;// + this.parent.absScaleX;
+					var ld2p = Math.sqrt(dx*dx + dy*dy); // local
+					var gang = this.parent.absRotation / 180 * Math.PI; // global total rotation for parent
+					var latan2 = Math.atan2(dy, dx); // local atan2 rads
+					
+					//local
+					return this.parent.absY + Math.sin(latan2 + gang) * ld2p;
+				}
+				return dy;
+			});
+			this.__defineGetter__('alpha', function() {
+				return self._alpha;
+			});
+			this.__defineSetter__('alpha', function(val) {
+				if(isNaN(val)) throw new ArgumentError("Value must be a Number.");
 				
-				//local
-				return this.parent.absY + Math.sin(latan2 + gang) * ld2p;
-			}
-			return dy;
-		});
-		this.__defineGetter__('alpha', function() {
-			return self._alpha;
-		});
-		this.__defineSetter__('alpha', function(val) {
-			if(isNaN(val)) throw new ArgumentError("Value must be a Number.");
-			
-			self._alpha = +val;
-			self.invalidate();
-		});
-		this.__defineGetter__('drawBoundingBox', function() {
-			return this._show_bounding_box;
-		});
-		this.__defineSetter__('drawBoundingBox', function(bool) {
-			this._show_bounding_box = bool;
-			this.invalidate();
-		});
-		/**
-		 * This allows the developer / designer to see the origin
-		 * of the DisplayObject they are working with
-		 */
-		this.__defineGetter__('drawOrigin', function() {
-			return self._show_origin;
-		});
-		this.__defineSetter__('drawOrigin', function(bool) {
-			self._show_origin = bool;
-			self.invalidate();
-		});
-		this.__defineGetter__('filters', function() {
-			return this._filters;
-		});
-		this.__defineSetter__('filters', function(arr) {
-			this._filters = arr;
-			self.invalidate();
-		});
-		this.__defineGetter__('height', function() {
-			if(this._boundingBox.width > -Infinity) return this._boundingBox.width * this.absScaleX;
+				self._alpha = +val;
+				self.invalidate();
+			});
+			this.__defineGetter__('drawBoundingBox', function() {
+				return this._show_bounding_box;
+			});
+			this.__defineSetter__('drawBoundingBox', function(bool) {
+				this._show_bounding_box = bool;
+				this.invalidate();
+			});
+			/**
+			 * This allows the developer / designer to see the origin
+			 * of the DisplayObject they are working with
+			 */
+			this.__defineGetter__('drawOrigin', function() {
+				return self._show_origin;
+			});
+			this.__defineSetter__('drawOrigin', function(bool) {
+				self._show_origin = bool;
+				self.invalidate();
+			});
+			this.__defineGetter__('filters', function() {
+				return this._filters;
+			});
+			this.__defineSetter__('filters', function(arr) {
+				this._filters = arr;
+				self.invalidate();
+			});
+			this.__defineGetter__('height', function() {
+				if(this._boundingBox.width > -Infinity) return this._boundingBox.width * this.absScaleX;
 
-			//when height is not immediately available via the bounding box, use this as a plan b
-			var r = new Rectangle(0, 0, 0, 0);
-			if(self._children) {
-				for(var c = 0; c < self._children.length; ++c) {
-					if(self._children[c].y < r.y) r.y = self._children[c].y;
-					if(self._children[c].y + self._children[c].height > r.height) r.height = self._children[c].y + self._children[c].height;
+				//when height is not immediately available via the bounding box, use this as a plan b
+				var r = new Rectangle(0, 0, 0, 0);
+				if(self._children) {
+					for(var c = 0; c < self._children.length; ++c) {
+						if(self._children[c].y < r.y) r.y = self._children[c].y;
+						if(self._children[c].y + self._children[c].height > r.height) r.height = self._children[c].y + self._children[c].height;
+					}
 				}
-			}
-			
-			if(self.graphics._points) {
-				for(var p = 0; p < self.graphics._points.length; ++p) {
-					var pt = self.graphics._points[p];
-					var rp = self.pp(pt.x, pt.y);
-					if(rp.y - self.absY < r.y) r.y = rp.y - self.absY;
-					if(rp.y - self.absY > r.height) r.height = rp.y - self.absY;
+				
+				if(self.graphics._points) {
+					for(var p = 0; p < self.graphics._points.length; ++p) {
+						var pt = self.graphics._points[p];
+						var rp = self.pp(pt.x, pt.y);
+						if(rp.y - self.absY < r.y) r.y = rp.y - self.absY;
+						if(rp.y - self.absY > r.height) r.height = rp.y - self.absY;
+					}
 				}
-			}
 
-			return r.height * self.absScaleY;
-		});
-		this.__defineSetter__('height', function(val) {
-			if(isNaN(val)) throw new ArgumentError("Height must be a Number.");
-			if(this.height > 0) {
-				this._source.height = +val;
-				this.scaleY = +val / this.height;
-			} else this.scaleY = 0;
-			self.invalidate();
-		});
-		this.__defineGetter__('mask', function() {
-			return this._mask;
-		});
-		this.__defineSetter__('mask', function(obj) {
-			this._mask = obj;
-			
-		});
-		this.__defineGetter__('mouseX', function() {
-			return this.stage.mouseX - this.absX;
-		});
-		this.__defineGetter__('mouseY', function() {
-			return this.stage.mouseY - this.absY;
-		});
-		this.__defineGetter__('name', function(val) {
-			return self._name;
-		});
-		this.__defineSetter__('name', function(val) {
-			if(self.parent && self.name) self.parent[self.name] = undefined;
-			self._name = val;
-			if(self.parent) self.parent[self.name] = self;
-		});
-		this.__defineGetter__('root', function() {
-			return self._root;
-		});
-		this.__defineGetter__('rotation', function() {
-			return self._rotation;
-		});
-		this.__defineSetter__('rotation', function(val) {
-			self._rotation = +val;
-			this._boundsValidated = false;
-		});
-		this.__defineGetter__('stage', function() {
-			return self._stage;
-		});
-		this.__defineGetter__('transform', function() {
-			return self._transform;
-		});
-		this.__defineSetter__('transform', function(obj) {
-			self._transform = obj;
-			this._boundsValidated = false;
-		});
-		this.__defineGetter__('x', function() {
-			if(this.parent) return this._x * this.parent.absScaleX;
-			return this._x;
-		});
-		this.__defineSetter__('x', function(val) {
-			self._x = +val;
-			this._boundsValidated = false;
-		});
-		this.__defineGetter__('y', function() {
-			if(this.parent) return this._y * this.parent.absScaleY;
-			return this._y;
-		});
-		this.__defineSetter__('y', function(val) {
-			self._y = +val;
-			this._boundsValidated = false;
-		});
-		this.__defineGetter__('width', function() {
-			if(this._boundingBox.width > -Infinity) return this._boundingBox.width * this.absScaleX;
+				return r.height * self.absScaleY;
+			});
+			this.__defineSetter__('height', function(val) {
+				if(isNaN(val)) throw new ArgumentError("Height must be a Number.");
+				if(this.height > 0) {
+					this._source.height = +val;
+					this.scaleY = +val / this.height;
+				} else this.scaleY = 0;
+				self.invalidate();
+			});
+			this.__defineGetter__('mask', function() {
+				return this._mask;
+			});
+			this.__defineSetter__('mask', function(obj) {
+				this._mask = obj;
+				
+			});
+			this.__defineGetter__('mouseX', function() {
+				return this.stage.mouseX - this.absX;
+			});
+			this.__defineGetter__('mouseY', function() {
+				return this.stage.mouseY - this.absY;
+			});
+			this.__defineGetter__('name', function(val) {
+				return self._name;
+			});
+			this.__defineSetter__('name', function(val) {
+				if(self.parent && self.name) self.parent[self.name] = undefined;
+				self._name = val;
+				if(self.parent) self.parent[self.name] = self;
+			});
+			this.__defineGetter__('root', function() {
+				return self._root;
+			});
+			this.__defineGetter__('rotation', function() {
+				return self._rotation;
+			});
+			this.__defineSetter__('rotation', function(val) {
+				self._rotation = +val;
+				this._boundsValidated = false;
+			});
+			this.__defineGetter__('stage', function() {
+				return self._stage;
+			});
+			this.__defineGetter__('transform', function() {
+				return self._transform;
+			});
+			this.__defineSetter__('transform', function(obj) {
+				obj._displayObject = this;
+				this._transform = obj;
+				this._boundsValidated = false;
+			});
+			this.__defineGetter__('x', function() {
+				if(this.parent) return this._x * this.parent.absScaleX;
+				return this._x;
+			});
+			this.__defineSetter__('x', function(val) {
+				self._x = +val;
+				this._boundsValidated = false;
+			});
+			this.__defineGetter__('y', function() {
+				if(this.parent) return this._y * this.parent.absScaleY;
+				return this._y;
+			});
+			this.__defineSetter__('y', function(val) {
+				self._y = +val;
+				this._boundsValidated = false;
+			});
+			this.__defineGetter__('width', function() {
+				if(this._boundingBox.width > -Infinity) return this._boundingBox.width * this.absScaleX;
 
-			//when width is not immediately available via the bounding box, use this as a plan b
-			var r = new Rectangle(0, 0, 0, 0);
-			if(this._children) {
-				for(var c = 0; c < this._children.length; ++c) {
-					if(this._children[c].x < r.x) r.x = this._children[c].x;
-					if(this._children[c].x + this._children[c].width > r.width) r.width = this._children[c].x + this._children[c].width;
+				//when width is not immediately available via the bounding box, use this as a plan b
+				var r = new Rectangle(0, 0, 0, 0);
+				if(this._children) {
+					for(var c = 0; c < this._children.length; ++c) {
+						if(this._children[c].x < r.x) r.x = this._children[c].x;
+						if(this._children[c].x + this._children[c].width > r.width) r.width = this._children[c].x + this._children[c].width;
+					}
 				}
-			}
-			
-			if(this.graphics._points) {
-				for(var p = 0; p < this.graphics._points.length; ++p) {
-					var pt = this.graphics._points[p];
-					var rp = this.pp(pt.x, pt.y);
-					if(rp.x - this.absX < r.x) r.x = rp.x - this.absX;
-					if(rp.x - this.absX > r.width) r.width = rp.x - this.absX;
+				
+				if(this.graphics._points) {
+					for(var p = 0; p < this.graphics._points.length; ++p) {
+						var pt = this.graphics._points[p];
+						var rp = this.pp(pt.x, pt.y);
+						if(rp.x - this.absX < r.x) r.x = rp.x - this.absX;
+						if(rp.x - this.absX > r.width) r.width = rp.x - this.absX;
+					}
 				}
-			}
+				
+				return r.width * this.absScaleX;
+			});
+			this.__defineSetter__('width', function(val) {
+				if(isNaN(val)) throw new ArgumentError("value must be a number");
+				if(this.width > 0) {
+					this._source.width = +val;
+					this.scaleX = +val / this.width;
+				} else this.scaleX = 0;
+				this.invalidate();
+			});
+			this.__defineGetter__('scaleX', function() {
+				return this._scale_x;
+			});
+			this.__defineSetter__('scaleX', function(val) {
+				if(isNaN(val) || !isFinite(val)) throw new ArgumentError("value must be a number");
+				this._scale_x = +val;
+				this.invalidate();
+			});
+			this.__defineGetter__('scaleY', function() {
+				return this._scale_y;
+			});
+			this.__defineSetter__('scaleY', function(val) {
+				if(isNaN(val)) throw new ArgumentError("value must be a number");
+				this._scale_y = +val;
+				this.invalidate();
+			});
 			
-			return r.width * this.absScaleX;
-		});
-		this.__defineSetter__('width', function(val) {
-			if(isNaN(val)) throw new ArgumentError("value must be a number");
-			if(this.width > 0) {
-				this._source.width = +val;
-				this.scaleX = +val / this.width;
-			} else this.scaleX = 0;
-			this.invalidate();
-		});
-		this.__defineGetter__('scaleX', function() {
-			return this._scale_x;
-		});
-		this.__defineSetter__('scaleX', function(val) {
-			if(isNaN(val) || !isFinite(val)) throw new ArgumentError("value must be a number");
-			this._scale_x = +val;
-			this.invalidate();
-		});
-		this.__defineGetter__('scaleY', function() {
-			return this._scale_y;
-		});
-		this.__defineSetter__('scaleY', function(val) {
-			if(isNaN(val)) throw new ArgumentError("value must be a number");
-			this._scale_y = +val;
-			this.invalidate();
-		});
-		
-		this.name = _f.genId();
-		
-		this.graphics = new Graphics();
-		this.graphics.displayObject = this;
-		
-		var self = this;
-		this.addEventListener(Event.ADDED_TO_STAGE, function(event) {
-			self._root = _f;
-			self._stage = _f.stage;
-		});
-		this.addEventListener(Event.REMOVED, function(event) {
-			self._root = undefined;
-			self.parent[event.target.name] = undefined;
-		});
-		this.addEventListener(Event.REMOVED_FROM_STAGE, function(event) {
-			self.parent = undefined;	
-		});
+			this.name = _f.genId();
+			
+			this.graphics = new Graphics();
+			this.graphics.displayObject = this;
+			
+			var self = this;
+			this.addEventListener(Event.ADDED_TO_STAGE, function(event) {
+				self._root = _f;
+				self._stage = _f.stage;
+			});
+			this.addEventListener(Event.REMOVED, function(event) {
+				self._root = undefined;
+				self.parent[event.target.name] = undefined;
+			});
+			this.addEventListener(Event.REMOVED_FROM_STAGE, function(event) {
+				self.parent = undefined;	
+			});
 
-		//this.drawOrigin = true;
-		//this.drawBoundingBox = true;
-		//this.drawStageObjects = true;
+			this.transform = new Transform();
+
+			//this.drawOrigin = true;
+			//this.drawBoundingBox = true;
+			//this.drawStageObjects = true;
+		}
 	}
-	com.flanvas.display.DisplayObject.extend(com.flanvas.events.EventDispatcher);
 	com.flanvas.display.DisplayObject.prototype.drawSelf = function() {
 		if(this.visible && this.root) {
 			var arr = this.graphics.data;
@@ -1475,14 +1500,17 @@ try{
 		this._construct();
 	}
 	Transform.prototype._construct = function() {
-		this._colorTransform = new ColorTransform();
+		this._displayObject;
 		
 		this.__defineGetter__('colorTransform', function() {
 			return this._colorTransform;
 		});
 		this.__defineSetter__('colorTransform', function(obj) {
+			obj._transform = this;
 			this._colorTransform = obj;
 		});
+
+		this.colorTransform = new ColorTransform();
 	}
 	
 	/**
@@ -1492,6 +1520,7 @@ try{
 		this._construct();
 	}
 	ColorTransform.prototype._construct = function() {
+		this._transform;
 		this._color = undefined;
 		
 		this.__defineGetter__('color', function() {
@@ -1499,6 +1528,11 @@ try{
 		});
 		this.__defineSetter__('color', function(val) {
 			this._color = Utils.rgba(val);
+			
+			var s = this._transform._displayObject._source.getContext("2d");
+			s.fillStyle = this._color;
+			s.fillRect(0, 0, s.width, s.height);
+			s.fill();
 		});
 	}
 	
@@ -1534,7 +1568,7 @@ try{
 		this.graphics.instruction("try{ ctx.drawImage(this.presentationData, 0, 0, this.presentationData.width, this.presentationData.height, this.absX, this.absY, this.width, this.height); } catch(e) {}");
 		this.graphics.instruction("if(this._shear.m11) ctx.transform(this._shear.m11, this._shear.m12, this._shear.m21, this._shear.m22, 0, 0);");
 	}
-	com.flanvas.display.Bitmap.extend(com.flanvas.display.DisplayObject);
+	com.flanvas.display.Bitmap = class extends com.flanvas.display.DisplayObject {}
 	com.flanvas.display.Bitmap.prototype.shear = function() {
 		// m21 controls the overall skew
 		this._shear.m11 = 1;
@@ -1550,41 +1584,41 @@ try{
 	/**
 	 * InteractiveObject Class
 	 */
-	com.flanvas.display.InteractiveObject = function() {
-		this._construct();
-	}
-	com.flanvas.display.InteractiveObject.prototype._construct = function() {
-		this._is_mouse_in_path = false;
-		this._mouse_enabled = true;
+	com.flanvas.display.InteractiveObject = class extends com.flanvas.display.DisplayObject {
+		constructor() {
+			super();
 
-		this.__defineGetter__('mouseEnabled', function() {
-			return this._mouse_enabled;
-		});
-		this.__defineSetter__('mouseEnabled', function(bool) {
-			this._mouse_enabled = bool;
-		});
-		
-		var self = this;
-		this.addEventListener(FocusEvent.FOCUS_IN, function(event) {});
-		this.addEventListener(FocusEvent.FOCUS_OUT, function(event) {});
-		this.addEventListener(MouseEvent.MOUSE_DOWN, function(event) {
-			self._last_mouse_down_time = Utils.getTimer();
-		});
-		this.addEventListener(MouseEvent.MOUSE_UP, function(event) {
-			if(self._last_mouse_down_time + 200 > Utils.getTimer()) self.dispatchEvent(new MouseEvent(MouseEvent.CLICK, true, false, this.mouseX, this.mouseY));
-		});
-		this.addEventListener(MouseEvent.ROLL_OUT, function(event) {
-			if(self.buttonMode && self.useHandCursor) {
-				document.body.style.cursor = 'default';
-			}
-		});
-		this.addEventListener(MouseEvent.ROLL_OVER, function(event) {
-			if(self.buttonMode && self.useHandCursor) {
-				document.body.style.cursor = 'pointer';
-			}
-		});
+			this._is_mouse_in_path = false;
+			this._mouse_enabled = true;
+
+			this.__defineGetter__('mouseEnabled', function() {
+				return this._mouse_enabled;
+			});
+			this.__defineSetter__('mouseEnabled', function(bool) {
+				this._mouse_enabled = bool;
+			});
+			
+			var self = this;
+			this.addEventListener(FocusEvent.FOCUS_IN, function(event) {});
+			this.addEventListener(FocusEvent.FOCUS_OUT, function(event) {});
+			this.addEventListener(MouseEvent.MOUSE_DOWN, function(event) {
+				self._last_mouse_down_time = Utils.getTimer();
+			});
+			this.addEventListener(MouseEvent.MOUSE_UP, function(event) {
+				if(self._last_mouse_down_time + 200 > Utils.getTimer()) self.dispatchEvent(new MouseEvent(MouseEvent.CLICK, true, false, this.mouseX, this.mouseY));
+			});
+			this.addEventListener(MouseEvent.ROLL_OUT, function(event) {
+				if(self.buttonMode && self.useHandCursor) {
+					document.body.style.cursor = 'default';
+				}
+			});
+			this.addEventListener(MouseEvent.ROLL_OVER, function(event) {
+				if(self.buttonMode && self.useHandCursor) {
+					document.body.style.cursor = 'pointer';
+				}
+			});
+		}
 	}
-	com.flanvas.display.InteractiveObject.extend(com.flanvas.display.DisplayObject);
 	com.flanvas.display.InteractiveObject.prototype.isMouseTarget = function() {
 		if(!this.mouseEnabled) return false;
 		//if(this._is_mouse_in_path) return true;
@@ -1597,7 +1631,7 @@ try{
 			//if(c.hitTestPoint(c.mouseX, c.mouseY, false)) return c;
 		}
 		
-		return false
+		return false;
 	}
 	var InteractiveObject = com.flanvas.display.InteractiveObject;
 	
@@ -1624,218 +1658,220 @@ try{
 	/**
 	 * TextField Class
 	 */
-	com.flanvas.text.TextField = function() {
-		this._construct();
+	com.flanvas.text.TextField = class extends com.flanvas.display.InteractiveObject {
+		constructor() {
+			super();
+
+			this._activate_cursor_interval_id = undefined;
+			this._autoSize = com.flanvas.text.TextFieldAutoSize.START;
+			this._background = false;
+			this._backgroundColor = 'rgb(255,255,255)';
+			this._border = false;
+			this._border_color = 'rgb(0,0,0)';
+			this._caret_index = 0;
+			this._cursor_visible = false;
+			this._font = 'Arial';
+			this._height = 100;
+			this._word_wrap = false;
+			this._selection = undefined;
+			this._size = '12px';
+			this._text = [''];
+			this._textColor = 'rgb(0,0,0)';
+			this._type = TextFieldType.DYNAMIC;
+			this._width = 100;
+			
+			this.__defineGetter__('autoSize', function() {
+				return this._autoSize;
+			});
+			this.__defineSetter__('autoSize', function(str) {
+				if(!str) throw new Error('The value must be a valid string.');
+				
+				// NONE and START are the same
+				if(str == com.flanvas.text.TextFieldAutoSize.NONE) str = com.flanvas.text.TextFieldAutoSize.START;
+				
+				this._autoSize = str;
+			});
+			this.__defineSetter__('border', function(val) {
+				this._border = val;
+			});
+			this.__defineGetter__('border', function() {
+				return this._border;
+			});
+			this.__defineSetter__('borderColor', function(val) {
+				this._border_color = val;
+				this.invalidate();
+			});
+			this.__defineGetter__('borderColor', function() {
+				return this._border_color;
+			});
+			this.__defineGetter__('caretIndex', function() {
+				return this._caret_index;
+			});
+			this.__defineGetter__('font', function() {
+				if(this.size) return this.size + ' ' + this._font;
+				return this._font;
+			});
+			this.__defineSetter__('font', function(val) {
+				this._font = val;
+			});
+			this.__defineGetter__('height', function() {
+				switch(this.autoSize) {
+					case TextFieldAutoSize.LEFT:
+					case TextFieldAutoSize.RIGHT:
+					case TextFieldAutoSize.CENTER:
+					case TextFieldAutoSize.NONE:
+					case TextFieldAutoSize.START:
+					case TextFieldAutoSize.END:
+						//return +(this.size.replace(/px/,'')) + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom;
+						return +this.size.replace(/px/,'');
+				}
+				return this._height;
+			});
+			this.__defineSetter__('height', function(val) {
+				this._height = +val;
+				this.invalidate();
+			});
+			this.__defineGetter__('length', function() {
+				return this._text.length;
+			});
+			this.__defineGetter__('padding', function() {
+				var obj = {};
+				var s = +this.size.replace(/px/,'');
+				obj.top = s * com.flanvas.text.TextField.PADDING.top;
+				obj.right = s * com.flanvas.text.TextField.PADDING.right;
+				obj.bottom = s * com.flanvas.text.TextField.PADDING.bottom;
+				obj.left = s * com.flanvas.text.TextField.PADDING.left;
+				return obj;
+			});
+			this.__defineGetter__('size', function() {
+				return this._size;
+			});
+			this.__defineSetter__('size', function(val) {
+				this._size = val;
+				this.invalidate();
+			});
+			this.__defineGetter__('text', function() {
+				return this._text.join('');
+			});
+			this.__defineSetter__('text', function(str) {
+				this._text = [str];
+				this.invalidate();
+				this.dispatchEvent(new Event(Event.CHANGE));
+			});
+			this.__defineGetter__('textColor', function() {
+				return this._textColor;
+			});
+			this.__defineSetter__('textColor', function(val) {
+				this._textColor = Utils.rgba(val);
+				this.invalidate();
+			});
+			this.__defineGetter__('type', function() {
+				return this._type;
+			});
+			this.__defineSetter__('type', function(val) {
+				this._type = val;
+				switch(this._type) {
+					case TextFieldType.DYNAMIC:
+						this.mouseEnabled = false;
+					break;
+					case TextFieldType.INPUT:
+					break;
+				}
+				this.invalidate();
+			});
+			this.__defineSetter__('x', function(val) {
+				switch(this._autoSize) {
+					case TextFieldAutoSize.LEFT:
+					case TextFieldAutoSize.RIGHT:
+					case TextFieldAutoSize.CENTER:
+					case TextFieldAutoSize.NONE:
+					case TextFieldAutoSize.START:
+					case TextFieldAutoSize.END:
+					break;
+				}
+				
+				this._x = +val;
+			});
+			this.__defineGetter__('width', function() {
+				/**
+				 * For now, START and END are matched to LEFT and RIGHT to save time
+				 */
+				if(this._width) return this._width;
+
+				switch(this.autoSize) {
+					case com.flanvas.text.TextFieldAutoSize.NONE:
+						return 100;
+						//return this.super.width;
+					break;
+					case com.flanvas.text.TextFieldAutoSize.LEFT:
+					case com.flanvas.text.TextFieldAutoSize.START:
+					case com.flanvas.text.TextFieldAutoSize.CENTER:
+					case com.flanvas.text.TextFieldAutoSize.RIGHT:
+					case com.flanvas.text.TextFieldAutoSize.END:
+						var ctx = Utils.virtualContext();
+						ctx.font = this.font;
+						var w = ctx.measureText(this.text).width;
+						ctx = null;
+						// delete ctx;
+						return w;
+					break;
+				}	
+			});
+			this.__defineSetter__('width', function(val) {
+				this._width = +val;
+				this.invalidate();
+			});
+			this.__defineGetter__('wordWrap', function() {
+				return this._word_wrap;
+			});
+			this.__defineSetter__('wordWrap', function(val) {
+				this._word_wrap = Boolean(val);
+				this.invalidate();
+			});
+			
+			this.graphics.instruction([Instruction.TEXTFIELD]);
+			
+			var self = this;
+			this.addEventListener(com.flanvas.events.FocusEvent.FOCUS_IN, function(event) {
+				if(self.type == com.flanvas.text.TextFieldType.INPUT) {
+					self.addEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, self.captureKey);
+					self.activateCursor();
+				}
+			});
+			this.addEventListener(com.flanvas.events.FocusEvent.FOCUS_OUT, function(event) {
+				self.removeEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, self.captureKey);
+				self.activateCursor(false);
+			});
+			this.addEventListener(com.flanvas.events.MouseEvent.ROLL_OUT, function(event) {
+				document.body.style.cursor = 'default';
+			});
+			this.addEventListener(com.flanvas.events.MouseEvent.ROLL_OVER, function(event) {
+				if(this.type == com.flanvas.text.TextFieldType.INPUT) document.body.style.cursor = 'text';
+			});
+			this.addEventListener(com.flanvas.events.MouseEvent.CLICK, function(event) {
+				var ctx = Utils.virtualContext();
+				var diff = 999999999;
+				
+				loop:
+				for(i = 0; i < this.text.length; ++i) {
+					/**
+					 * 1.2 is the reverse offset of the perecent that the cursor is usually
+					 * off by. In all actuality, after calcs are complete, the cursor ends
+					 * up being 80% of where it would normally be (which is what I wanted).
+					 */
+					var w = ctx.measureText(this.text.substr(0, i)).width * 1.2;
+					if(Math.abs(w - event.localX) < diff) {
+						diff = Math.abs(w - event.localX);
+						this._caret_index = i;
+					} else break loop;
+				}
+
+				ctx = null;
+				// delete ctx;
+			});
+		}
 	}
 	com.flanvas.text.TextField.PADDING = {top:0.25,right:0.25,bottom:0.25,left:0.25}; // done in percentages (of the size in px)
-	com.flanvas.text.TextField.prototype._construct = function() {
-		this._activate_cursor_interval_id = undefined;
-		this._autoSize = com.flanvas.text.TextFieldAutoSize.START;
-		this._background = false;
-		this._backgroundColor = 'rgb(255,255,255)';
-		this._border = false;
-		this._border_color = 'rgb(0,0,0)';
-		this._caret_index = 0;
-		this._cursor_visible = false;
-		this._font = 'Arial';
-		this._height = 100;
-		this._word_wrap = false;
-		this._selection = undefined;
-		this._size = '12px';
-		this._text = [''];
-		this._textColor = 'rgb(0,0,0)';
-		this._type = TextFieldType.DYNAMIC;
-		this._width = 100;
-		
-		this.__defineGetter__('autoSize', function() {
-			return this._autoSize;
-		});
-		this.__defineSetter__('autoSize', function(str) {
-			if(!str) throw new Error('The value must be a valid string.');
-			
-			// NONE and START are the same
-			if(str == com.flanvas.text.TextFieldAutoSize.NONE) str = com.flanvas.text.TextFieldAutoSize.START;
-			
-			this._autoSize = str;
-		});
-		this.__defineSetter__('border', function(val) {
-			this._border = val;
-		});
-		this.__defineGetter__('border', function() {
-			return this._border;
-		});
-		this.__defineSetter__('borderColor', function(val) {
-			this._border_color = val;
-			this.invalidate();
-		});
-		this.__defineGetter__('borderColor', function() {
-			return this._border_color;
-		});
-		this.__defineGetter__('caretIndex', function() {
-			return this._caret_index;
-		});
-		this.__defineGetter__('font', function() {
-			if(this.size) return this.size + ' ' + this._font;
-			return this._font;
-		});
-		this.__defineSetter__('font', function(val) {
-			this._font = val;
-		});
-		this.__defineGetter__('height', function() {
-			switch(this.autoSize) {
-				case TextFieldAutoSize.LEFT:
-				case TextFieldAutoSize.RIGHT:
-				case TextFieldAutoSize.CENTER:
-				case TextFieldAutoSize.NONE:
-				case TextFieldAutoSize.START:
-				case TextFieldAutoSize.END:
-					//return +(this.size.replace(/px/,'')) + com.flanvas.text.TextField.PADDING.top + com.flanvas.text.TextField.PADDING.bottom;
-					return +this.size.replace(/px/,'');
-			}
-			return this._height;
-		});
-		this.__defineSetter__('height', function(val) {
-			this._height = +val;
-			this.invalidate();
-		});
-		this.__defineGetter__('length', function() {
-			return this._text.length;
-		});
-		this.__defineGetter__('padding', function() {
-			var obj = {};
-			var s = +this.size.replace(/px/,'');
-			obj.top = s * com.flanvas.text.TextField.PADDING.top;
-			obj.right = s * com.flanvas.text.TextField.PADDING.right;
-			obj.bottom = s * com.flanvas.text.TextField.PADDING.bottom;
-			obj.left = s * com.flanvas.text.TextField.PADDING.left;
-			return obj;
-		});
-		this.__defineGetter__('size', function() {
-			return this._size;
-		});
-		this.__defineSetter__('size', function(val) {
-			this._size = val;
-			this.invalidate();
-		});
-		this.__defineGetter__('text', function() {
-			return this._text.join('');
-		});
-		this.__defineSetter__('text', function(str) {
-			this._text = [str];
-			this.invalidate();
-			this.dispatchEvent(new Event(Event.CHANGE));
-		});
-		this.__defineGetter__('textColor', function() {
-			return this._textColor;
-		});
-		this.__defineSetter__('textColor', function(val) {
-			this._textColor = Utils.rgba(val);
-			this.invalidate();
-		});
-		this.__defineGetter__('type', function() {
-			return this._type;
-		});
-		this.__defineSetter__('type', function(val) {
-			this._type = val;
-			switch(this._type) {
-				case TextFieldType.DYNAMIC:
-					this.mouseEnabled = false;
-				break;
-				case TextFieldType.INPUT:
-				break;
-			}
-			this.invalidate();
-		});
-		this.__defineSetter__('x', function(val) {
-			switch(this._autoSize) {
-				case TextFieldAutoSize.LEFT:
-				case TextFieldAutoSize.RIGHT:
-				case TextFieldAutoSize.CENTER:
-				case TextFieldAutoSize.NONE:
-				case TextFieldAutoSize.START:
-				case TextFieldAutoSize.END:
-				break;
-			}
-			
-			this._x = +val;
-		});
-		this.__defineGetter__('width', function() {
-			/**
-			 * For now, START and END are matched to LEFT and RIGHT to save time
-			 */
-			if(this._width) return this._width;
-
-			switch(this.autoSize) {
-				case com.flanvas.text.TextFieldAutoSize.NONE:
-					return 100;
-					//return this.super.width;
-				break;
-				case com.flanvas.text.TextFieldAutoSize.LEFT:
-				case com.flanvas.text.TextFieldAutoSize.START:
-				case com.flanvas.text.TextFieldAutoSize.CENTER:
-				case com.flanvas.text.TextFieldAutoSize.RIGHT:
-				case com.flanvas.text.TextFieldAutoSize.END:
-					var ctx = Utils.virtualContext();
-					ctx.font = this.font;
-					var w = ctx.measureText(this.text).width;
-					delete ctx;
-					return w;
-				break;
-			}	
-		});
-		this.__defineSetter__('width', function(val) {
-			this._width = +val;
-			this.invalidate();
-		});
-		this.__defineGetter__('wordWrap', function() {
-			return this._word_wrap;
-		});
-		this.__defineSetter__('wordWrap', function(val) {
-			this._word_wrap = Boolean(val);
-			this.invalidate();
-		});
-		
-		this.graphics.instruction([Instruction.TEXTFIELD]);
-		
-		var self = this;
-		this.addEventListener(com.flanvas.events.FocusEvent.FOCUS_IN, function(event) {
-			if(self.type == com.flanvas.text.TextFieldType.INPUT) {
-				self.addEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, self.captureKey);
-				self.activateCursor();
-			}
-		});
-		this.addEventListener(com.flanvas.events.FocusEvent.FOCUS_OUT, function(event) {
-			self.removeEventListener(com.flanvas.events.KeyboardEvent.KEY_DOWN, self.captureKey);
-			self.activateCursor(false);
-		});
-		this.addEventListener(com.flanvas.events.MouseEvent.ROLL_OUT, function(event) {
-			document.body.style.cursor = 'default';
-		});
-		this.addEventListener(com.flanvas.events.MouseEvent.ROLL_OVER, function(event) {
-			if(this.type == com.flanvas.text.TextFieldType.INPUT) document.body.style.cursor = 'text';
-		});
-		this.addEventListener(com.flanvas.events.MouseEvent.CLICK, function(event) {
-			var ctx = Utils.virtualContext();
-			var diff = 999999999;
-			
-			loop:
-			for(i = 0; i < this.text.length; ++i) {
-				/**
-				 * 1.2 is the reverse offset of the perecent that the cursor is usually
-				 * off by. In all actuality, after calcs are complete, the cursor ends
-				 * up being 80% of where it would normally be (which is what I wanted).
-				 */
-				var w = ctx.measureText(this.text.substr(0, i)).width * 1.2;
-				if(Math.abs(w - event.localX) < diff) {
-					diff = Math.abs(w - event.localX);
-					this._caret_index = i;
-				} else break loop;
-			}
-
-			delete ctx;
-		});
-	}
-	com.flanvas.text.TextField.extend(com.flanvas.display.InteractiveObject);
 	com.flanvas.text.TextField.prototype._wordWrap = function() {
 		if(this.autoSize != com.flanvas.text.TextFieldAutoSize.NONE) {
 			var vc = Utils.virtualContext();
@@ -1934,7 +1970,7 @@ try{
 					if(window.clipboardData) {
 						insertAtText(this.caretIndex, window.clipboardData.getData('text'));
 					} else {
-						alert('Paste has not been implemented for this browser.');
+						console.warn('Paste has not been implemented for this browser.');
 					}
 					break;
 				}
@@ -1944,7 +1980,7 @@ try{
 					if(window.clipboardData) {
 						window.clipboardData.setData('text', this.text.substr(this.caretIndex));
 					} else {
-						alert('Copy has not been implemented for this browser.');
+						console.warn('Copy has not been implemented for this browser.');
 					}
 				}
 			default:
@@ -1975,32 +2011,32 @@ try{
 	/**
 	 * DisplayObjectContainer Class
 	 */
-	com.flanvas.display.DisplayObjectContainer = function() {
-		this._construct();
+	com.flanvas.display.DisplayObjectContainer = class extends com.flanvas.display.InteractiveObject {
+		constructor() {
+			super();
+
+			this._children = [];
+			this._uid = _f.genUid(this);
+			
+			this.__defineGetter__('numChildren', function() {
+				return this._children.length;
+			});
+			
+			this.addEventListener(Event.ADDED_TO_STAGE, function(event) {
+				for(var i = 0; i < event.target.numChildren; ++i) {
+					event.target.getChildAt(i).dispatchEvent(new Event(Event.ADDED_TO_STAGE));
+				}
+			});
+			this.addEventListener(Event.REMOVED, function(event) {
+				if(self.stage) self.dispatchEvent(new Event(Event.REMOVED_FROM_STAGE));
+			});
+			this.addEventListener(Event.REMOVED_FROM_STAGE, function(event) {
+				for(var i = 0; i < event.target.numChildren; ++i) {
+					event.target.getChildAt(i).dispatchEvent(new Event(Event.REMOVED_FROM_STAGE));
+				}
+			});
+		}
 	}
-	com.flanvas.display.DisplayObjectContainer.prototype._construct = function() {
-		this._children = [];
-		this._uid = _f.genUid(this);
-		
-		this.__defineGetter__('numChildren', function() {
-			return this._children.length;
-		});
-		
-		this.addEventListener(Event.ADDED_TO_STAGE, function(event) {
-			for(var i = 0; i < event.target.numChildren; ++i) {
-				event.target.getChildAt(i).dispatchEvent(new Event(Event.ADDED_TO_STAGE));
-			}
-		});
-		this.addEventListener(Event.REMOVED, function(event) {
-			if(self.stage) self.dispatchEvent(new Event(Event.REMOVED_FROM_STAGE));
-		});
-		this.addEventListener(Event.REMOVED_FROM_STAGE, function(event) {
-			for(var i = 0; i < event.target.numChildren; ++i) {
-				event.target.getChildAt(i).dispatchEvent(new Event(Event.REMOVED_FROM_STAGE));
-			}
-		});
-	}
-	com.flanvas.display.DisplayObjectContainer.extend(com.flanvas.display.InteractiveObject);
 	com.flanvas.display.DisplayObjectContainer.prototype.addChild = function(child) {
 		return this.addChildAt(child, this.numChildren);
 	}
@@ -2062,8 +2098,33 @@ try{
 	/**
 	 * Graphics Class
 	 */
-	function Graphics() {
-		this._construct();
+	class Graphics extends Object {
+		constructor() {
+			super();
+
+			this._data = [];
+			this._displayObject = undefined;
+			this._fill_style = [];
+			/**
+			 * Used to keep track of open paths on the current object.
+			 * set to true on "beginPath()"
+			 * set to false on "closePath()"
+			 */
+			this._open_path = false;
+			this._points = [];
+			this._stroke_style = [];
+			
+			this.__defineGetter__('data', function() {
+				return this._data;
+			});
+			this.__defineGetter__('displayObject', function() {
+				return this._displayObject;
+			});
+			this.__defineSetter__('displayObject', function(obj) {
+				if(obj === undefined) throw new ArgumentError("obj must be a valid DisplayObject.");
+				this._displayObject = obj
+			});
+		}
 	}
 	/**
 	 * the following gradients-related code was meant to be, and needs to remain static for now
@@ -2076,31 +2137,6 @@ try{
 		Graphics.gradients[id] = arr;
 		obj.invalidate();
 	}
-	Graphics.prototype._construct = function() {
-		this._data = [];
-		this._displayObject = undefined;
-		this._fill_style = [];
-		/**
-		 * Used to keep track of open paths on the current object.
-		 * set to true on "beginPath()"
-		 * set to false on "closePath()"
-		 */
-		this._open_path = false;
-		this._points = [];
-		this._stroke_style = [];
-		
-		this.__defineGetter__('data', function() {
-			return this._data;
-		});
-		this.__defineGetter__('displayObject', function() {
-			return this._displayObject;
-		});
-		this.__defineSetter__('displayObject', function(obj) {
-			if(obj === undefined) throw new ArgumentError("obj must be a valid DisplayObject.");
-			this._displayObject = obj
-		});
-	}
-	Graphics.extend(Object);
 	Graphics.prototype.addColorStop = function(id, position, color) {
 		this.instruction(id + ".addColorStop("+position+",'"+color+"');");
 	}
@@ -2129,7 +2165,7 @@ try{
 		if(focalPointRatio === undefined) focalPointRatio = 0;
 	}
 	Graphics.prototype.beginPath = function() {
-		if(this._open_path) alert("-- It is advised that you close one path before continuing another --");
+		if(this._open_path) console.warn("-- It is advised that you close one path before continuing another --");
 		
 		this.instruction([Instruction.BEGINPATH]);
 		this._open_path = true;
@@ -2405,29 +2441,29 @@ try{
 	/**
 	 * Sprite Class
 	 */
-	com.flanvas.display.Sprite = function() {
-		this._construct();
+	com.flanvas.display.Sprite = class extends com.flanvas.display.DisplayObjectContainer {
+		constructor() {
+			super();
+
+			this._buttonMode = false;
+			this._dragBounds = undefined;
+			this._mouseDownProps = undefined;
+			this._useHandCursor = false;
+			
+			this.__defineGetter__('buttonMode', function() {
+				return this._buttonMode;
+			});
+			this.__defineSetter__('buttonMode', function(bool) {
+				this._buttonMode = bool;
+			});
+			this.__defineGetter__('useHandCursor', function() {
+				return this._useHandCursor;
+			});
+			this.__defineSetter__('useHandCursor', function(bool) {
+				this._useHandCursor = bool;
+			});
+		}
 	}
-	com.flanvas.display.Sprite.prototype._construct = function() {
-		this._buttonMode = false;
-		this._dragBounds = undefined;
-		this._mouseDownProps = undefined;
-		this._useHandCursor = false;
-		
-		this.__defineGetter__('buttonMode', function() {
-			return this._buttonMode;
-		});
-		this.__defineSetter__('buttonMode', function(bool) {
-			this._buttonMode = bool;
-		});
-		this.__defineGetter__('useHandCursor', function() {
-			return this._useHandCursor;
-		});
-		this.__defineSetter__('useHandCursor', function(bool) {
-			this._useHandCursor = bool;
-		});
-	}
-	com.flanvas.display.Sprite.extend(com.flanvas.display.DisplayObjectContainer);
 	com.flanvas.display.Sprite.prototype.dragMouseMoveHandler = function(event) {
 		this.x = this.mouseX - this._mouseDownProps.x;
 		this.y = this.mouseY - this._mouseDownProps.y;
@@ -2464,7 +2500,7 @@ try{
 	function URLRequest(url) {
 		this.url = url;
 	}
-	URLRequest.extend(Object);
+	URLRequest = class extends Object {}
 	
 	com.flanvas.core.FlanvasSprite = function() {
 		this._construct();
@@ -2472,7 +2508,7 @@ try{
 	com.flanvas.core.FlanvasSprite.prototype._construct = function() {
 		//
 	}
-	com.flanvas.core.FlanvasSprite.extend(Sprite);
+	com.flanvas.core.FlanvasSprite = class extends Sprite {}
 	
 	com.flanvas.core.UIComponent = function() {
 		this._construct();
@@ -2480,7 +2516,7 @@ try{
 	com.flanvas.core.UIComponent.prototype._construct = function() {
 		//
 	}
-	com.flanvas.core.UIComponent.extend(com.flanvas.core.FlanvasSprite);
+	com.flanvas.core.UIComponent = class extends com.flanvas.core.FlanvasSprite {}
 	
 	/**
 	 * Loader Class
@@ -2497,7 +2533,7 @@ try{
 			return this._content;
 		});
 	}
-	Loader.extend(DisplayObjectContainer);
+	Loader = class extends DisplayObjectContainer {}
 	Loader.prototype.load = function(request) {
 		if(request.substr) throw new Error("The request must be a URLRequest, not a String.");
 		this.contentLoaderInfo.load(request);
@@ -2548,7 +2584,7 @@ try{
 		
 		if(resource) this.load(resource);
 	}
-	com.flanvas.net.URLLoader.extend(com.flanvas.events.EventDispatcher);
+	com.flanvas.net.URLLoader = class extends com.flanvas.events.EventDispatcher {}
 	com.flanvas.net.URLLoader.prototype.load = function(resource) {
 		var self = this;
 		var onReadyStateChange = function() {
@@ -2609,7 +2645,7 @@ try{
 			return this._url;
 		});
 	}
-	LoaderInfo.extend(com.flanvas.events.EventDispatcher);
+	LoaderInfo = class extends com.flanvas.events.EventDispatcher {}
 	LoaderInfo.prototype.load = function(request) {
 		this._loader_url = request.url;
 		
@@ -2673,7 +2709,7 @@ try{
 		
 		if(stream) this._audio = new Audio(stream);
 	}
-	com.flanvas.media.Sound.extend(com.flanvas.events.EventDispatcher);
+	com.flanvas.media.Sound = class extends com.flanvas.events.EventDispatcher {}
 	com.flanvas.media.Sound.prototype.load = function(stream) {
 		this._audio = new Audio(stream);
 	}
@@ -2688,7 +2724,7 @@ try{
 	Svg.prototype._construct = function() {
 		this.svgInstanceName = undefined;
 	}
-	Svg.extend(Sprite);
+	Svg = class extends Sprite {}
 	Svg.loadClass = function(resource, class_name, func) {
 		var l = new com.flanvas.net.URLLoader();
 		l.addEventListener(Event.COMPLETE, function(event) {
@@ -2713,7 +2749,7 @@ try{
 			if(class_name) {
 				eval(class_name + '=function(){this._construct()}');
 				eval(class_name + '.prototype._construct=function(){this.parseXml(Utils.strToXml(\''+Utils.xmlToStr(event.target.data)+'\'));}');
-				eval(class_name + '.extend(Svg);');	
+				eval(class_name + '.e/xtend(Svg);');	
 			}
 			
 			if(func) eval('func('+class_name+');');
@@ -3329,7 +3365,7 @@ try{
 				}
 			}
 		} catch(e) {
-			// we may be completely out of scope and 'throw' isn't working here so we're alerting instead
+			// we may be completely out of scope and 'throw' isn't working here so we're console.warning instead
 			throw new Error(e);
 		}
 	}
@@ -3337,8 +3373,18 @@ try{
 	/**
 	 * Event Class
 	 */
-	com.flanvas.events.Event = function(type, bubbles, cancelable) {
-		this._construct(type, bubbles, cancelable);
+	com.flanvas.events.Event = class extends Object {
+		constructor(type, bubbles, cancelable) {
+			super();
+
+			if(bubbles === undefined) bubbles = false;
+			if(cancelable === undefined) cancelable = false;
+			
+			this.bubbles = bubbles;
+			this.cancelable = cancelable;
+			this.type = type;
+			this.target = undefined;
+		}
 	}
 	com.flanvas.events.Event.ADDED = "added";
 	com.flanvas.events.Event.ADDED_TO_STAGE = "added_to_stage";
@@ -3347,30 +3393,18 @@ try{
 	com.flanvas.events.Event.ENTER_FRAME = "enter_frame";
 	com.flanvas.events.Event.REMOVED = "removed";
 	com.flanvas.events.Event.REMOVED_FROM_STAGE = "removed_from_stage";
-	com.flanvas.events.Event.prototype._construct = function(type, bubbles, cancelable) {
-		if(bubbles === undefined) bubbles = false;
-		if(cancelable === undefined) cancelable = false;
-		
-		this.bubbles = bubbles;
-		this.cancelable = cancelable;
-		this.type = type;
-		this.target = undefined;
-	}
-	com.flanvas.events.Event.extend(Object);
 	var Event = com.flanvas.events.Event;
 	
 	/**
 	 * com.flanvas.events.FocusEvent Class
 	 */
-	com.flanvas.events.FocusEvent = function(type, bubbles, cancelable) {
-		this._construct(type, bubbles, cancelable);
+	com.flanvas.events.FocusEvent = class extends com.flanvas.events.Event {
+		constructor(type, bubbles, cancelable) {
+			super(type, bubbles, cancelable);
+		}
 	}
 	com.flanvas.events.FocusEvent.FOCUS_IN = 'focus_in';
 	com.flanvas.events.FocusEvent.FOCUS_OUT = 'focus_out';
-	com.flanvas.events.FocusEvent.prototype._construct = function(type, bubbles, cancelable) {
-		//
-	}
-	com.flanvas.events.FocusEvent.extend(com.flanvas.events.Event);
 	var FocusEvent = com.flanvas.events.FocusEvent;
 	
 	/**
@@ -3492,59 +3526,59 @@ try{
 	/**
 	 * KeyboardEvent
 	 */
-	com.flanvas.events.KeyboardEvent = function(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
-		this._construct(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue);
+	com.flanvas.events.KeyboardEvent = class extends com.flanvas.events.Event {
+		constructor(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
+			super();
+
+			this._charCode = undefined;
+			this._commandKey = false;
+			this._controlKey = false;
+			this._keyCode = undefined;
+			
+			if(charCodeValue) this._charCode = charCodeValue;
+			if(commandKeyValue) this._commandKey = commandKeyValue;
+			if(controlKeyValue) this._controlKey = controlKeyValue;
+			if(keyCodeValue) this._keyCode = keyCodeValue;
+			
+			this.__defineGetter__('charCode', function() {
+				return this._charCode;
+			});
+			this.__defineGetter__('commandKey', function() {
+				return this._commandKey;
+			});
+			this.__defineGetter__('controlKey', function() {
+				return this._controlKey;
+			});
+			this.__defineGetter__('keyCode', function() {
+				return this._keyCode;
+			});
+		}
 	}
 	com.flanvas.events.KeyboardEvent.KEY_DOWN = 'key_down';
 	com.flanvas.events.KeyboardEvent.KEY_UP = 'key_up';
-	com.flanvas.events.KeyboardEvent.prototype._construct = function(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
-		this._charCode = undefined;
-		this._commandKey = false;
-		this._controlKey = false;
-		this._keyCode = undefined;
-		
-		if(charCodeValue) this._charCode = charCodeValue;
-		if(commandKeyValue) this._commandKey = commandKeyValue;
-		if(controlKeyValue) this._controlKey = controlKeyValue;
-		if(keyCodeValue) this._keyCode = keyCodeValue;
-		
-		this.__defineGetter__('charCode', function() {
-			return this._charCode;
-		});
-		this.__defineGetter__('commandKey', function() {
-			return this._commandKey;
-		});
-		this.__defineGetter__('controlKey', function() {
-			return this._controlKey;
-		});
-		this.__defineGetter__('keyCode', function() {
-			return this._keyCode;
-		});
-	}
-	com.flanvas.events.KeyboardEvent.extend(com.flanvas.events.Event);
 	var KeyboardEvent = com.flanvas.events.KeyboardEvent;
 	
 	/**
 	 * IntervalManager Class
 	 */
-	function IntervalManager() {
-		this._construct();
+	class IntervalManager extends com.flanvas.events.EventDispatcher {
+		constructor() {
+			super();
+
+			var d = new Date();
+			this._current_id = 0;
+			this._fps = 0;
+			this._fps_throttle = [];
+			this._interval = setInterval("_f.intervalManager.update()", 10);
+			this._intervals = new Array();
+			this._last_time = 0;
+			this._start_time = d.getTime();
+			
+			this.__defineGetter__('fps', function() {
+				return this._fps;
+			});
+		}
 	}
-	IntervalManager.prototype._construct = function() {
-		var d = new Date();
-		this._current_id = 0;
-		this._fps = 0;
-		this._fps_throttle = [];
-		this._interval = setInterval("_f.intervalManager.update()", 10);
-		this._intervals = new Array();
-		this._last_time = 0;
-		this._start_time = d.getTime();
-		
-		this.__defineGetter__('fps', function() {
-			return this._fps;
-		});
-	}
-	IntervalManager.extend(com.flanvas.events.EventDispatcher);
 	IntervalManager.prototype.clearInterval = function(id) {
 		for(var i in this._intervals) {
 			if(this._intervals[i].id == id) {
@@ -3637,7 +3671,7 @@ try{
 		this.controlKey = controlKey;
 		this.clickCount = clickCount;
 	}
-	com.flanvas.events.MouseEvent.extend(Event);
+	com.flanvas.events.MouseEvent = class extends Event {}
 	com.flanvas.events.MouseEvent.CLICK = "click";
 	com.flanvas.events.MouseEvent.MOUSE_DOWN = "mouse_down";
 	com.flanvas.events.MouseEvent.MOUSE_MOVE = "mouse_move";
@@ -3649,186 +3683,188 @@ try{
 	/**
 	 * Stage Class
 	 */
-	com.flanvas.display.Stage = function() {
-		this._construct();
-	}
-	com.flanvas.display.Stage.CANVAS_SET = "canvas_set";
-	com.flanvas.display.Stage.prototype._construct = function() {
-		this._canvas = undefined;
-		this._context = "2d";
-		this._currentMouseTarget = undefined;
-		this._draw_stage_objects = false;
-		this._focusManager = new com.flanvas.managers.FocusManager(this);
-		this._fps = 24;
-		this._lastKeyDownEvent = undefined;
-		this._stage_height = undefined;
-		this._stage_width = undefined;
-		this._keyboard_attached = false;
-		
-		var self = this;
-		this.__defineGetter__('canvas', function() {
-			return this._canvas;
-		});
-		this.__defineSetter__('canvas', function(obj) {
-			this._canvas = obj;
+	com.flanvas.display.Stage = class extends DisplayObjectContainer {
+		constructor() {
+			super();
+
+			this._canvas = undefined;
+			this._context = "2d";
+			this._currentMouseTarget = undefined;
+			this._draw_stage_objects = false;
+			this._focusManager = new com.flanvas.managers.FocusManager(this);
+			this._fps = 24;
+			this._lastKeyDownEvent = undefined;
+			this._stage_height = undefined;
+			this._stage_width = undefined;
+			this._keyboard_attached = false;
 			
-			var mousePos = function(x, y) {
-				/**
-				 * subtract the offsets to get the actual mouse props for the canvas
-				 * after the canvas recieves modified x/y etc
-				 */
-				self._mouse_x = x - self.canvas.offsetLeft;
-				self._mouse_y = y - self.canvas.offsetTop;
-			}
-			
-			if((new RegExp('iphone|ipod|ipad', 'i')).test(navigator.userAgent)) {
-			//if(navigator.userAgent.match(/iphone|ipod|ipad/i)) {
-				//enables "mouse" for iphone
-				var touchType = function(event) {
-					if(event.targetTouches[0]) return "targetTouches";
-						else if(event.changedTouches[0]) return "changedTouches";
-					return "touches";
+			var self = this;
+			this.__defineGetter__('canvas', function() {
+				return this._canvas;
+			});
+			this.__defineSetter__('canvas', function(obj) {
+				this._canvas = obj;
+				
+				var mousePos = function(x, y) {
+					/**
+					 * subtract the offsets to get the actual mouse props for the canvas
+					 * after the canvas recieves modified x/y etc
+					 */
+					self._mouse_x = x - self.canvas.offsetLeft;
+					self._mouse_y = y - self.canvas.offsetTop;
 				}
 				
-				this.canvas.addEventListener('touchstart', function(event) {
-					var tt = touchType(event);
-					mousePos(event[tt][0].clientX, event[tt][0].clientY);
-					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
-				});
-				this.canvas.addEventListener('touchmove', function(event) {
-					var tt = touchType(event);
-					mousePos(event[tt][0].clientX, event[tt][0].clientY);
-					var t = self.findMouseTarget();
-					//self._currentMouseTarget = t;
-					t.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_MOVE));
-				});
-				this.canvas.addEventListener('touchend', function(event) {
-					var tt = touchType(event);
-					mousePos(event[tt][0].clientX, event[tt][0].clientY);
-					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
-				});
-			} else {
-				// regular mouse listening
-				this.canvas.addEventListener('mousedown', function(event) {
-					mousePos(event.pageX, event.pageY);
-					self.focus = self._currentMouseTarget;
-					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
-				}, false);
-				this.canvas.addEventListener('mousemove', function(event) {
-					mousePos(event.pageX, event.pageY);
-					var t = self.findMouseTarget();
-					//self._currentMouseTarget = t;
-					t.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_MOVE));
-				}, false);
-				this.canvas.addEventListener('mouseup', function(event) {
-					mousePos(event.pageX, event.pageY);
-					self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
-				}, false);
-			}
-			
-			/**
-			 * I'm storing the keydown event for use with the keypress event because neither
-			 * the keyDownEvent nor the keyPressEvent contains both the correct 
-			 * event.charCode and event.keyCode (if both are contained, one is incorrect).
-			 * I'm sure there's a problem somewhere with doing this, but it's working
-			 * so far.
-			 */
-			this.keyDownHandler = function(event) {
-				event.stopPropagation();
-				//event.preventDefault();
-				self._lastKeyDownEvent = event;
-			}
-			this.keyUpHandler = function(event) {
-				event.stopPropagation();
-				//event.preventDefault();
-				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
-			}
-			this.keyPressHandler = function(event) {
-				event.stopPropagation();
-				//event.preventDefault();
-				self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, self._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
-			}
-
-			document.addEventListener('click', function(event) {
-				if(event.target === self._canvas) {
-					if(!self._keyboard_attached) {
-						document.addEventListener('keydown', self.keyDownHandler, false);
-						document.addEventListener('keypress', self.keyPressHandler, false);
-						document.addEventListener('keyup', self.keyUpHandler, false);
-						self._keyboard_attached = true;
+				if((new RegExp('iphone|ipod|ipad', 'i')).test(navigator.userAgent)) {
+				//if(navigator.userAgent.match(/iphone|ipod|ipad/i)) {
+					//enables "mouse" for iphone
+					var touchType = function(event) {
+						if(event.targetTouches[0]) return "targetTouches";
+							else if(event.changedTouches[0]) return "changedTouches";
+						return "touches";
 					}
+					
+					this.canvas.addEventListener('touchstart', function(event) {
+						var tt = touchType(event);
+						mousePos(event[tt][0].clientX, event[tt][0].clientY);
+						self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
+					});
+					this.canvas.addEventListener('touchmove', function(event) {
+						var tt = touchType(event);
+						mousePos(event[tt][0].clientX, event[tt][0].clientY);
+						var t = self.findMouseTarget();
+						//self._currentMouseTarget = t;
+						t.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_MOVE));
+					});
+					this.canvas.addEventListener('touchend', function(event) {
+						var tt = touchType(event);
+						mousePos(event[tt][0].clientX, event[tt][0].clientY);
+						self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
+					});
 				} else {
-					document.removeEventListener('keydown', self.keyDownHandler);
-					document.removeEventListener('keypress', self.keyPressHandler);
-					document.removeEventListener('keyup', self.keyUpHandler);
-					self._keyboard_attached = false;
+					// regular mouse listening
+					this.canvas.addEventListener('mousedown', function(event) {
+						mousePos(event.pageX, event.pageY);
+						self.focus = self._currentMouseTarget;
+						self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
+					}, false);
+					this.canvas.addEventListener('mousemove', function(event) {
+						mousePos(event.pageX, event.pageY);
+						var t = self.findMouseTarget();
+						self._currentMouseTarget = t;
+						t.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_MOVE));
+					}, false);
+					this.canvas.addEventListener('mouseup', function(event) {
+						mousePos(event.pageX, event.pageY);
+						self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
+					}, false);
 				}
-			}, false);
+				
+				/**
+				 * I'm storing the keydown event for use with the keypress event because neither
+				 * the keyDownEvent nor the keyPressEvent contains both the correct 
+				 * event.charCode and event.keyCode (if both are contained, one is incorrect).
+				 * I'm sure there's a problem somewhere with doing this, but it's working
+				 * so far.
+				 */
+				this.keyDownHandler = function(event) {
+					event.stopPropagation();
+					//event.preventDefault();
+					self._lastKeyDownEvent = event;
+				}
+				this.keyUpHandler = function(event) {
+					event.stopPropagation();
+					//event.preventDefault();
+					self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+				}
+				this.keyPressHandler = function(event) {
+					event.stopPropagation();
+					//event.preventDefault();
+					self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, self._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+				}
+
+				document.addEventListener('click', function(event) {
+					if(event.target === self._canvas) {
+						if(!self._keyboard_attached) {
+							document.addEventListener('keydown', self.keyDownHandler, false);
+							document.addEventListener('keypress', self.keyPressHandler, false);
+							document.addEventListener('keyup', self.keyUpHandler, false);
+							self._keyboard_attached = true;
+						}
+					} else {
+						document.removeEventListener('keydown', self.keyDownHandler);
+						document.removeEventListener('keypress', self.keyPressHandler);
+						document.removeEventListener('keyup', self.keyUpHandler);
+						self._keyboard_attached = false;
+					}
+				}, false);
+				
+				this.dispatchEvent(new Event(Stage.CANVAS_SET));
+			});
+			this.__defineGetter__('ctx', function() {
+				return this.canvas.getContext(this._context);
+			});
+			this.__defineGetter__('drawStageObjects', function() {
+				return self._draw_stage_objects;
+			});
+			this.__defineSetter__('drawStageObjects', function(bool) {
+				self._draw_stage_objects = bool;
+				self.invalidate();
+			});
+			this.__defineGetter__('focus', function() {
+				return this._focusManager.getFocus();
+			});
+			this.__defineSetter__('focus', function(component) {
+				this._focusManager.setFocus(component);
+			});
+			this.__defineGetter__('fps', function() {
+				return this._fps;
+			});
+			this.__defineSetter__('fps', function(val) {
+				this._fps = +val;
+			});
+			this.__defineGetter__('mouseX', function() {
+				return this._mouse_x;
+			});
+			this.__defineGetter__('mouseY', function() {
+				return this._mouse_y;
+			});
+			this.__defineGetter__('stageHeight', function() {
+				return this._canvas.height;
+			});
+			this.__defineGetter__('stageWidth', function() {
+				return this._canvas.width;
+			});
 			
-			this.dispatchEvent(new Event(Stage.CANVAS_SET));
-		});
-		this.__defineGetter__('ctx', function() {
-			return this.canvas.getContext(this._context);
-		});
-		this.__defineGetter__('drawStageObjects', function() {
-			return self._draw_stage_objects;
-		});
-		this.__defineSetter__('drawStageObjects', function(bool) {
-			self._draw_stage_objects = bool;
-			self.invalidate();
-		});
-		this.__defineGetter__('focus', function() {
-			return this._focusManager.getFocus();
-		});
-		this.__defineSetter__('focus', function(component) {
-			this._focusManager.setFocus(component);
-		});
-		this.__defineGetter__('fps', function() {
-			return this._fps;
-		});
-		this.__defineSetter__('fps', function(val) {
-			this._fps = +val;
-		});
-		this.__defineGetter__('mouseX', function() {
-			return this._mouse_x;
-		});
-		this.__defineGetter__('mouseY', function() {
-			return this._mouse_y;
-		});
-		this.__defineGetter__('stageHeight', function() {
-			return this._canvas.height;
-		});
-		this.__defineGetter__('stageWidth', function() {
-			return this._canvas.width;
-		});
-		
-		this.addEventListener(Event.ENTER_FRAME, function(event) {
-			event.target.clear();
-			/**
-			 * start the drawing sequence, which is propagated downward 
-			 * to every item in the display list
-			 */
-			event.target.drawSelf();
-			
-			/**
-			 * process roll_over / roll_out stuff
-			 * we process these here because a mouse_move is not always happening when a roll_over happens due
-			 * to the fact that an item may animate to be underneath the mouse.
-			 */
-			var t = event.target.findMouseTarget();
-			//if(!this._currentMouseTarget) this._currentMouseTarget = t;
-			if(this._currentMouseTarget != t) {
-				if(this._currentMouseTarget) this._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.ROLL_OUT));
-				this._currentMouseTarget = t;
-				this._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.ROLL_OVER));
-			}
-		});
+			this.addEventListener(Event.ENTER_FRAME, function(event) {
+				event.target.clear();
+				/**
+				 * start the drawing sequence, which is propagated downward 
+				 * to every item in the display list
+				 */
+				event.target.drawSelf();
+				
+				/**
+				 * process roll_over / roll_out stuff
+				 * we process these here because a mouse_move is not always happening when a roll_over happens due
+				 * to the fact that an item may animate to be underneath the mouse.
+				 */
+				var t = event.target.findMouseTarget();
+				//if(!this._currentMouseTarget) this._currentMouseTarget = t;
+				if(this._currentMouseTarget != t) {
+					if(this._currentMouseTarget) this._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.ROLL_OUT));
+					this._currentMouseTarget = t;
+					this._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.ROLL_OVER));
+				}
+			});
+		}
+
+		clear() {
+			// clears the canvas
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		}
 	}
-	com.flanvas.display.Stage.extend(DisplayObjectContainer);
-	com.flanvas.display.Stage.prototype.clear = function() {
-		// clears the canvas
-		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	}
+	com.flanvas.display.Stage.CANVAS_SET = "canvas_set";
+	// com.flanvas.display.Stage = class extends DisplayObjectContainer {}
 	/*
 	 * reduntant function which finds the object which the mouse
 	 * is on
@@ -3854,25 +3890,25 @@ try{
 	/**
 	 * MainTimeline Class
 	 */
-	function MainTimeline() {
-		this._construct();
+	class MainTimeline extends com.flanvas.events.EventDispatcher {
+		constructor() {
+			super();
+
+			MainTimeline.instance = this;
+			this._instance_count = 0;
+			this._instance_log = [];
+			this._stage = undefined;
+			
+			//this.clearTraceOnFrame = true;
+			this.intervalManager = new IntervalManager();
+			this.traceDiv = undefined;
+			this.traceDraw = false;
+			
+			this.__defineGetter__('stage', function() {
+				return this._stage;
+			});
+		}
 	}
-	MainTimeline.prototype._construct = function() {
-		MainTimeline.instance = this;
-		this._instance_count = 0;
-		this._instance_log = [];
-		this._stage = undefined;
-		
-		//this.clearTraceOnFrame = true;
-		this.intervalManager = new IntervalManager();
-		this.traceDiv = undefined;
-		this.traceDraw = false;
-		
-		this.__defineGetter__('stage', function() {
-			return this._stage;
-		});
-	}
-	MainTimeline.extend(com.flanvas.events.EventDispatcher);
 	MainTimeline.prototype.genId = function() {
 		return "instance" + String(++this._instance_count);
 	}
@@ -3931,7 +3967,7 @@ try{
 	 * Utils Class
 	 */
 	function Utils() {}
-	Utils.extend(Object);
+	Utils = class extends Object {}
 	Utils.getTimer = function() {
 		var d = new Date();
 		return d.getTime() - _f.intervalManager._start_time;
@@ -4114,7 +4150,7 @@ try{
 				} catch(e) {}
 			}
 		}
-		alert(str);
+		console.warn(str);
 	}
 	
 	var _f = new MainTimeline();
@@ -4133,7 +4169,7 @@ try{
 				}
 				_f.traceDiv.innerHTML = _f.traceDiv.innerHTML + param + "<br>";
 			} else {
-				//alert(param);
+				//console.warn(param);
 			}
 		}
 	}
@@ -4146,9 +4182,10 @@ try{
 				str += arguments[i];
 				if(i != arguments.length - 1) str += ", "; 
 			}
-			alert(str);
+			console.warn(str);
 		}
 	}
 } catch(e) {
-	throw new Error("Flanvas Error: " + e);	
+	console.error(e);
+	// throw new Error("Flanvas Error: " + e);
 }
