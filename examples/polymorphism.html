@@ -9,29 +9,38 @@
 window.onload = function() {
 	stage.canvas = document.getElementById('myCanvas');
 	
-	function A() {
-		this.val += "A";
-	}
-	A.prototype.babble = function() {
-		trace("class:", this.constructor.name, "hierarchy:", this.val.replace('undefined', ''));
+	class A {
+		constructor() {
+			this.val += "A";
+		}
+
+		babble() {
+			trace("class:", this.constructor.name, "hierarchy:", this.val.replace('undefined', ''));
+		}
 	}
 
-	function B() {
-		this.val += "B";
-		this.supe();
-	}
-	B.extend(A);
-	B.prototype.babble = function() {
-		this.supe().prototype.babble.apply(this);
+	class B extends A {
+		constructor() {
+			super();
+
+			this.val += "B";
+		}
+
+		babble() {
+			super.babble.apply(this);
+		}
 	}
 
-	function C() {
-		this.val += "C";
-		this.supe();
-	}
-	C.extend(B);
-	C.prototype.babble = function() {
-		this.supe().prototype.babble.apply(this);
+	class C extends B {
+		constructor() {
+			super();
+
+			this.val += "C";
+		}
+
+		babble() {
+			super.babble.apply(this);
+		}
 	}
 
 	var a = new A();
@@ -43,36 +52,38 @@ window.onload = function() {
 	var c = new C();
 	c.babble();
 	
-	function One() {
-		this._construct();
-	}
-	One.prototype._construct = function() {
-		this.val += "1"
-	}
-	One.prototype.babble = function() {
-		trace("class:", this.constructor.name, "hierarchy:", this.val.replace('undefined',''));
+	class One {
+		constructor() {
+			this.val += "1";
+		}
+
+		babble() {
+			trace("class:", this.constructor.name, "hierarchy:", this.val.replace('undefined',''));
+		}
 	}
 
-	function Two() {
-		this._construct();
-	}
-	Two.prototype._construct = function() {
-		this.val += "2"
-	}
-	Two.extend(One);
-	Two.prototype.babble = function() {
-		this.supe().prototype.babble.apply(this);
+	class Two extends One {
+		constructor() {
+			super();
+
+			this.val += "2";
+		}
+
+		babble() {
+			super.babble.apply(this);
+		}
 	}
 
-	function Three() {
-		this._construct();
-	}
-	Three.prototype._construct = function() {
-		this.val += "3"
-	}
-	Three.extend(Two);
-	Three.prototype.babble = function() {
-		this.supe().prototype.babble.apply(this);
+	class Three extends Two {
+		constructor() {
+			super();
+
+			this.val += "3";
+		}
+
+		babble() {
+			super.babble.apply(this);
+		}
 	}
 
 	var one = new One();
@@ -87,9 +98,11 @@ window.onload = function() {
 </script>
 </head>
 
-<body>
+<body style="margin:0">
 
-<canvas id="myCanvas" width="550" height="450" style="position:relative; left:0; top:0;"></canvas>
+<p>Check the console output</p>
+
+<canvas id="myCanvas" width="550" height="450"></canvas>
 
 </body>
 </html>

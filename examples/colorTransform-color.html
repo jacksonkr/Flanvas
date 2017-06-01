@@ -20,14 +20,14 @@ window.onload = function() {
 	var box = new Sprite();
 	//box.graphics.fillStyle('rbg(0, 0, 0)');
 	box.graphics.fillStyle(0x009900);
-	box.graphics.drawRect(0, 0, 400, 300);
+	box.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
 	box.graphics.fill();
 	stage.addChild(box);
 	
 	var tf = new com.flanvas.text.TextField();
 	tf.text = "Mouse over this box to see how color transforms work in flanvas.";
 	tf.y = 50.0;
-	tf.x = 200;
+	tf.x = stage.stageWidth / 2;
 	tf.autoSize = com.flanvas.text.TextFieldAutoSize.CENTER;
 	stage.addChild(tf);
 	

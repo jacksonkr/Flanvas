@@ -1,3 +1,5 @@
+ 'use strict'
+
 /**
  * Copyright (c) 2010 Jackson Rollins <rollins.jackson@gmail.com>
  * 
@@ -279,7 +281,7 @@ try{
 	/**
 	 * ArrayCollection Class
 	 */
-	ArrayCollection = class extends ListCollectionView {
+	var ArrayCollection = class extends ListCollectionView {
 		constructor() {
 			super();
 
@@ -290,12 +292,11 @@ try{
 	/**
 	 * FocusManager Class
 	 */
-	com.flanvas.managers.FocusManager = function(container) {
-		this._construct(container);
-	}
-	com.flanvas.managers.FocusManager.prototype._construct = function(container) {
-		this._container = container;
-		this._focus = container;
+	com.flanvas.managers.FocusManager = class {
+		constructor(container) {
+			this._container = container;
+			this._focus = container;
+		}
 	}
 	com.flanvas.managers.FocusManager.prototype.getFocus = function() {
 		return this._focus;
@@ -309,7 +310,7 @@ try{
 	/**
 	 * Capabilities class
 	 */
-	com.flanvas.system.Capabilities = {};
+	com.flanvas.system.Capabilities = class {};
 	com.flanvas.system.Capabilities.__defineGetter__('os', function() {
 		return navigator.appVersion;
 	});
@@ -317,7 +318,7 @@ try{
 	/**
 	 * BitmapData Class
 	 */
-	BitmapData = class extends Object {
+	var BitmapData = class extends Object {
 		constructor(width, height, transparent, fillColor) {
 			this._alpha = 1.0;
 			this._imageData = undefined;
@@ -378,7 +379,7 @@ try{
 	/**
 	 * Error Class
 	 */
-	Error = class extends Object {
+	class Error extends Object {
 		constructor(msg) {
 			super();
 
@@ -413,12 +414,12 @@ try{
 	/**
 	 * ArgumentError class
 	 */
-	ArgumentError = class extends Error {}
+	class ArgumentError extends Error {}
 	
 	/**
 	 * Rect Class
 	 */
-	Rectangle = class extends Object {
+	class Rectangle extends Object {
 		constructor(x, y, width, height) {
 			super();
 
@@ -517,12 +518,6 @@ try{
 	/**
 	 * BitmapFilter
 	 */
-	com.flanvas.filters.BitmapFilter = function() {
-		this._construct();
-	}
-	com.flanvas.filters.BitmapFilter.prototype._construct = function() {
-		//
-	}
 	com.flanvas.filters.BitmapFilter = class extends Object {}
 	com.flanvas.filters.BitmapFilter.prototype.instruct = function(str) {
 		eval('var ctx = stage.canvas.getContext(stage._context)');
@@ -533,46 +528,46 @@ try{
 	/**
 	 * DropShadowFilter
 	 */
-	com.flanvas.filters.DropShadowFilter = function(color, blur, offsetX, offsetY) {
-		this._construct(color, blur, offsetX, offsetY);
+	com.flanvas.filters.DropShadowFilter = class extends com.flanvas.filters.BitmapFilter {
+		constructor(color, blur, offsetX, offsetY) {
+			super();
+
+			if(!color) color = 'rgb(0,0,0)';
+			if(!blur) blur = 2.0;
+			if(!offsetX) offsetX = 5.0;
+			if(!offsetY) offsetY = 5.0;
+			
+			this._blur = blur;
+			this._color = color;
+			this._offsetX = offsetX;
+			this._offsetY = offsetY;
+			
+			this.__defineGetter__('blur', function(val) {
+				this._blur = +val;
+			});
+			this.__defineSetter__('blur', function() {
+				return this._blur;
+			});
+			this.__defineGetter__('color', function() {
+				return this._color;
+			});
+			this.__defineSetter__('color', function(val) {
+				this._color = val;
+			});
+			this.__defineGetter__('offsetX', function() {
+				return this._offsetX;
+			});
+			this.__defineSetter__('offsetX', function(val) {
+				this._offsetX = +val;
+			});
+			this.__defineGetter__('offsetY', function() {
+				return this._offsetY;
+			});
+			this.__defineSetter__('offsetY', function(val) {
+				this._offsetX = +val;
+			});
+		}
 	}
-	com.flanvas.filters.DropShadowFilter.prototype._construct = function(color, blur, offsetX, offsetY) {
-		if(!color) color = 'rgb(0,0,0)';
-		if(!blur) blur = 2.0;
-		if(!offsetX) offsetX = 5.0;
-		if(!offsetY) offsetY = 5.0;
-		
-		this._blur = blur;
-		this._color = color;
-		this._offsetX = offsetX;
-		this._offsetY = offsetY;
-		
-		this.__defineGetter__('blur', function(val) {
-			this._blur = +val;
-		});
-		this.__defineSetter__('blur', function() {
-			return this._blur;
-		});
-		this.__defineGetter__('color', function() {
-			return this._color;
-		});
-		this.__defineSetter__('color', function(val) {
-			this._color = val;
-		});
-		this.__defineGetter__('offsetX', function() {
-			return this._offsetX;
-		});
-		this.__defineSetter__('offsetX', function(val) {
-			this._offsetX = +val;
-		});
-		this.__defineGetter__('offsetY', function() {
-			return this._offsetY;
-		});
-		this.__defineSetter__('offsetY', function(val) {
-			this._offsetX = +val;
-		});
-	}
-	com.flanvas.filters.DropShadowFilter = class extends com.flanvas.filters.BitmapFilter {}
 	com.flanvas.filters.DropShadowFilter.prototype.drawSelf = function() {
 		this.instruct('ctx.shadowOffsetX = this._offsetX;');
 		this.instruct('ctx.shadowOffsetY = this._offsetY;');
@@ -895,7 +890,12 @@ try{
 					 */
 					for(var i in Graphics.gradients) {
 						for(var ii in Graphics.gradients[i]) {
-							eval(Graphics.gradients[i][ii]);
+							try {
+								var lave = Graphics.gradients[i][ii];
+								eval(lave);
+							} catch(e) {
+								new Error(e);
+							}
 						}
 					}
 					
@@ -1162,7 +1162,7 @@ try{
 
 					var d = [];
 					var r = [];
-					var xx, yy, xxh, yyw;
+					var xx, yy, xxw, yyh;
 
 					xx = this.absX + this._boundingBox.x;
 					yy = this.absY + this._boundingBox.y;
@@ -1486,7 +1486,8 @@ try{
 
 					if(0 < this._sourceOffset.y) this._sourceOffset.y = 0;
 
-					delete ctx;
+					ctx = null;
+					// delete ctx;
 				break;
 			}
 		}
@@ -1496,79 +1497,75 @@ try{
 	/**
 	 * Transform Class
 	 */
-	function Transform() {
-		this._construct();
-	}
-	Transform.prototype._construct = function() {
-		this._displayObject;
-		
-		this.__defineGetter__('colorTransform', function() {
-			return this._colorTransform;
-		});
-		this.__defineSetter__('colorTransform', function(obj) {
-			obj._transform = this;
-			this._colorTransform = obj;
-		});
+	var Transform = class {
+		constructor() {
+			this._displayObject;
+			
+			this.__defineGetter__('colorTransform', function() {
+				return this._colorTransform;
+			});
+			this.__defineSetter__('colorTransform', function(obj) {
+				obj._transform = this;
+				this._colorTransform = obj;
+			});
 
-		this.colorTransform = new ColorTransform();
+			this.colorTransform = new ColorTransform();
+		}
 	}
 	
 	/**
 	 * ColorTransform Class
 	 */
-	function ColorTransform() {
-		this._construct();
-	}
-	ColorTransform.prototype._construct = function() {
-		this._transform;
-		this._color = undefined;
-		
-		this.__defineGetter__('color', function() {
-			return this._color;
-		});
-		this.__defineSetter__('color', function(val) {
-			this._color = Utils.rgba(val);
+	var ColorTransform = class {
+		constructor() {
+			this._transform;
+			this._color = undefined;
 			
-			var s = this._transform._displayObject._source.getContext("2d");
-			s.fillStyle = this._color;
-			s.fillRect(0, 0, s.width, s.height);
-			s.fill();
-		});
+			this.__defineGetter__('color', function() {
+				return this._color;
+			});
+			this.__defineSetter__('color', function(val) {
+				this._color = Utils.rgba(val);
+				
+				var s = this._transform._displayObject._source.getContext("2d");
+				s.fillStyle = this._color;
+				s.fillRect(0, 0, s.width, s.height);
+				s.fill();
+			});
+		}
 	}
 	
 	/**
 	 * Bitmap Class
 	 */
-	com.flanvas.display.Bitmap = function(bitmapData) {
-		this._construct(bitmapData);
-	}
-	com.flanvas.display.Bitmap.prototype._construct = function(bmpd) {
-		this._bitmapData = bmpd;
-		this._shear = {};
-		
-		this.__defineGetter__('bitmapData', function() {
-			return this._bitmapData;
-		});
-		this.__defineSetter__('bitmapData', function(obj) {
-			if(obj === undefined) throw new ArgumentError("obj must be defined");
-			this._bitmapData = obj;
-		});
-		this.__defineGetter__('height', function() {
-			return this.bitmapData.height * this.absScaleY;
-		});
-		this.__defineGetter__('width', function() {
-			return this.bitmapData.width * this.absScaleX;
-		});
-		this.__defineGetter__('presentationData', function() {
-			if(this.absAlpha != this.bitmapData.alpha) this.bitmapData.alpha = this.absAlpha;
+	com.flanvas.display.Bitmap = class extends com.flanvas.display.DisplayObject {
+		constructor(bitmapData) {
+			this._bitmapData = bmpd;
+			this._shear = {};
 			
-			return this.bitmapData._imageData;
-		});
-		
-		this.graphics.instruction("try{ ctx.drawImage(this.presentationData, 0, 0, this.presentationData.width, this.presentationData.height, this.absX, this.absY, this.width, this.height); } catch(e) {}");
-		this.graphics.instruction("if(this._shear.m11) ctx.transform(this._shear.m11, this._shear.m12, this._shear.m21, this._shear.m22, 0, 0);");
+			this.__defineGetter__('bitmapData', function() {
+				return this._bitmapData;
+			});
+			this.__defineSetter__('bitmapData', function(obj) {
+				if(obj === undefined) throw new ArgumentError("obj must be defined");
+				this._bitmapData = obj;
+			});
+			this.__defineGetter__('height', function() {
+				return this.bitmapData.height * this.absScaleY;
+			});
+			this.__defineGetter__('width', function() {
+				return this.bitmapData.width * this.absScaleX;
+			});
+			this.__defineGetter__('presentationData', function() {
+				if(this.absAlpha != this.bitmapData.alpha) this.bitmapData.alpha = this.absAlpha;
+				
+				return this.bitmapData._imageData;
+			});
+			
+			this.graphics.instruction("try{ ctx.drawImage(this.presentationData, 0, 0, this.presentationData.width, this.presentationData.height, this.absX, this.absY, this.width, this.height); } catch(e) {}");
+			this.graphics.instruction("if(this._shear.m11) ctx.transform(this._shear.m11, this._shear.m12, this._shear.m21, this._shear.m22, 0, 0);");
+		}
 	}
-	com.flanvas.display.Bitmap = class extends com.flanvas.display.DisplayObject {}
 	com.flanvas.display.Bitmap.prototype.shear = function() {
 		// m21 controls the overall skew
 		this._shear.m11 = 1;
@@ -1910,7 +1907,8 @@ try{
 				if(row >= this._text.length) break loop;
 			}
 			
-			delete vc;
+			vc = null;
+			// delete vc;
 		}
 	}
 	com.flanvas.text.TextField.prototype.activateCursor = function(bool) {
@@ -2502,38 +2500,26 @@ try{
 	}
 	URLRequest = class extends Object {}
 	
-	com.flanvas.core.FlanvasSprite = function() {
-		this._construct();
-	}
-	com.flanvas.core.FlanvasSprite.prototype._construct = function() {
-		//
-	}
 	com.flanvas.core.FlanvasSprite = class extends Sprite {}
 	
-	com.flanvas.core.UIComponent = function() {
-		this._construct();
-	}
-	com.flanvas.core.UIComponent.prototype._construct = function() {
-		//
-	}
 	com.flanvas.core.UIComponent = class extends com.flanvas.core.FlanvasSprite {}
 	
 	/**
 	 * Loader Class
 	 */
-	function Loader() {
-		this._construct();
-	}
-	Loader.prototype._construct = function() {
-		this._content = undefined;
+	var Loader = class extends DisplayObjectContainer {
+		constructor() {
+			super();
+
+			this._content = undefined;
 		
-		this.contentLoaderInfo = new LoaderInfo(this);
+			this.contentLoaderInfo = new LoaderInfo(this);
 		
-		this.__defineGetter__('content', function() {
-			return this._content;
-		});
+			this.__defineGetter__('content', function() {
+				return this._content;
+			});
+		}
 	}
-	Loader = class extends DisplayObjectContainer {}
 	Loader.prototype.load = function(request) {
 		if(request.substr) throw new Error("The request must be a URLRequest, not a String.");
 		this.contentLoaderInfo.load(request);
@@ -2568,23 +2554,23 @@ try{
 	/**
 	 * URLLoader Class
 	 */
-	com.flanvas.net.URLLoader = function(resource) {
-		this._construct(resource);
+	com.flanvas.net.URLLoader = class extends com.flanvas.events.EventDispatcher {
+		constructor(resource) {
+			super();
+
+			this._data = undefined;
+			this._dataFormat = undefined;
+			
+			this.__defineGetter__('data', function() {
+				return this._data;
+			});
+			this.__defineGetter__('dataFormat', function() {
+				return this._dataFormat;
+			});
+			
+			if(resource) this.load(resource);
+		}
 	}
-	com.flanvas.net.URLLoader.prototype._construct = function(resource) {
-		this._data = undefined;
-		this._dataFormat = undefined;
-		
-		this.__defineGetter__('data', function() {
-			return this._data;
-		});
-		this.__defineGetter__('dataFormat', function() {
-			return this._dataFormat;
-		});
-		
-		if(resource) this.load(resource);
-	}
-	com.flanvas.net.URLLoader = class extends com.flanvas.events.EventDispatcher {}
 	com.flanvas.net.URLLoader.prototype.load = function(resource) {
 		var self = this;
 		var onReadyStateChange = function() {
@@ -2619,33 +2605,33 @@ try{
 	/**
 	 * LoaderInfo Class
 	 */
-	function LoaderInfo(loaderObj) {
-		this._construct(loaderObj);
+	class LoaderInfo extends com.flanvas.events.EventDispatcher {
+		constructor(loaderObj) {
+			super();
+
+			this._content_type = undefined;
+			this._content = undefined;
+			this._loader = loaderObj;
+			this._loader_url = undefined;
+			this._url = undefined;
+			
+			this.__defineGetter__('content', function() {
+				return this._content;
+			});
+			this.__defineGetter__('contentType', function() {
+				return this._content_type;
+			});
+			this.__defineGetter__('loader', function() {
+				return this._loader;
+			});
+			this.__defineGetter__('loaderURL', function() {
+				return this._loader_url;
+			});
+			this.__defineGetter__('url', function() {
+				return this._url;
+			});
+		}
 	}
-	LoaderInfo.prototype._construct = function(loaderObj) {
-		this._content_type = undefined;
-		this._content = undefined;
-		this._loader = loaderObj;
-		this._loader_url = undefined;
-		this._url = undefined;
-		
-		this.__defineGetter__('content', function() {
-			return this._content;
-		});
-		this.__defineGetter__('contentType', function() {
-			return this._content_type;
-		});
-		this.__defineGetter__('loader', function() {
-			return this._loader;
-		});
-		this.__defineGetter__('loaderURL', function() {
-			return this._loader_url;
-		});
-		this.__defineGetter__('url', function() {
-			return this._url;
-		});
-	}
-	LoaderInfo = class extends com.flanvas.events.EventDispatcher {}
 	LoaderInfo.prototype.load = function(request) {
 		this._loader_url = request.url;
 		
@@ -2718,13 +2704,14 @@ try{
 	}
 	var Sound = com.flanvas.media.Sound;
 	
-	function Svg() {
-		this._construct();
+	var Svg = class extends Sprite {
+		constructor() {
+			super();
+
+			this.svgInstanceName = undefined;
+		}
 	}
-	Svg.prototype._construct = function() {
-		this.svgInstanceName = undefined;
-	}
-	Svg = class extends Sprite {}
+	
 	Svg.loadClass = function(resource, class_name, func) {
 		var l = new com.flanvas.net.URLLoader();
 		l.addEventListener(Event.COMPLETE, function(event) {
@@ -3642,36 +3629,37 @@ try{
 	/**
 	 * com.flanvas.events.MouseEvent Class
 	 */
-	com.flanvas.events.MouseEvent = function(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
-		if(bubbles === undefined) bubbles = true;
-		this._construct(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount);
+	com.flanvas.events.MouseEvent = class extends com.flanvas.events.Event {
+		constructor(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
+			super(type, bubbles, cancelable);
+
+			if(bubbles === undefined) bubbles = true;
+
+			if(localX === undefined) localX = undefined;
+			if(localY === undefined) localY = undefined;
+			if(relatedObject === undefined) relatedObject = null;
+			if(ctrlKey === undefined) ctrlKey = false;
+			if(altKey === undefined) altKey = false;
+			if(shiftKey === undefined) shiftKey = false;
+			if(buttonDown === undefined) buttonDown = false;
+			if(delta === undefined) delta = 0;
+			if(commandKey === undefined) commandKey = false;
+			if(controlKey === undefined) controlKey = false;
+			if(clickCount === undefined) clickCount = false;
+			
+			this.localX = localX;
+			this.localY = localY;
+			this.relatedObject = relatedObject;
+			this.ctrlKey = ctrlKey;
+			this.altKey = altKey;
+			this.shiftKey = shiftKey;
+			this.buttonDown = buttonDown;
+			this.delta = delta;
+			this.commandKey = commandKey;
+			this.controlKey = controlKey;
+			this.clickCount = clickCount;
+		}
 	}
-	com.flanvas.events.MouseEvent.prototype._construct = function(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
-		if(localX === undefined) localX = undefined;
-		if(localY === undefined) localY = undefined;
-		if(relatedObject === undefined) relatedObject = null;
-		if(ctrlKey === undefined) ctrlKey = false;
-		if(altKey === undefined) altKey = false;
-		if(shiftKey === undefined) shiftKey = false;
-		if(buttonDown === undefined) buttonDown = false;
-		if(delta === undefined) delta = 0;
-		if(commandKey === undefined) commandKey = false;
-		if(controlKey === undefined) controlKey = false;
-		if(clickCount === undefined) clickCount = false;
-		
-		this.localX = localX;
-		this.localY = localY;
-		this.relatedObject = relatedObject;
-		this.ctrlKey = ctrlKey;
-		this.altKey = altKey;
-		this.shiftKey = shiftKey;
-		this.buttonDown = buttonDown;
-		this.delta = delta;
-		this.commandKey = commandKey;
-		this.controlKey = controlKey;
-		this.clickCount = clickCount;
-	}
-	com.flanvas.events.MouseEvent = class extends Event {}
 	com.flanvas.events.MouseEvent.CLICK = "click";
 	com.flanvas.events.MouseEvent.MOUSE_DOWN = "mouse_down";
 	com.flanvas.events.MouseEvent.MOUSE_MOVE = "mouse_move";
@@ -3952,22 +3940,22 @@ try{
 	/**
 	 * Point Class
 	 */
-	function Point(x, y) {
-		this._construct(x, y);
-	}
-	Point.prototype._construct = function(x, y) {
-		if(isNaN(x)) throw new ArgumentError("x must be a Number.");
-		if(isNaN(y)) throw new ArgumentError("y must be a Number.");
-		
-		this.x = +x;
-		this.y = +y;
+	// class Point { // doesn't work ??
+	var Point = class {
+		constructor(x, y) {
+			if(isNaN(x)) throw new ArgumentError("x must be a Number.");
+			if(isNaN(y)) throw new ArgumentError("y must be a Number.");
+			
+			this.x = +x;
+			this.y = +y;
+		}
 	}
 	
 	/**
 	 * Utils Class
 	 */
-	function Utils() {}
-	Utils = class extends Object {}
+	// function Utils() {}
+	class Utils extends Object {}
 	Utils.getTimer = function() {
 		var d = new Date();
 		return d.getTime() - _f.intervalManager._start_time;
