@@ -35,13 +35,14 @@
  * NOTES
  *
  * 1) Inheritence effected my layout in such a way that the classes
- * below are not in alphabetical order (unorthodox for me)
+ * below are not in alphabetical order
  *
  * 2) I wrote the inheritance for this project (basically a collection
- * of several I found on the web) so it may be a bit messy. 
+ * of several I found on the web) so it may be a bit messy. This has
+ * since been migrated to es6
  *
  * 3) Yes this is a combination of Flex and Flash parts, written from my
- * own interpretation of how those parts probably work.
+ * own interpretation of how those parts work conceptually.
  */
 
 /**
@@ -60,84 +61,6 @@
  */
 
 try{
-	/**
-	 * Recieved ideas for inheritence from the web (google)
-	 */
-	// window.supers = [];
-	// Function.prototype.extend = function(c) {
-	// 	try {
-	// 		var constr = this.prototype._construct;
-	// 		var d = {}, p = (this.prototype = new c());
-	// 	    this.supe = function (name) {
-	// 	        if (!(name in d)) {
-	// 	            d[name] = 0;
-	// 	        }        
-	// 	        var f, r, t = d[name], v = parent.prototype;
-	// 	        if (t) {
-	// 	            while (t) {
-	// 	                v = v.constructor.prototype;
-	// 	                t -= 1;
-	// 	            }
-	// 	            f = v[name];
-	// 	        } else {
-	// 	            f = p[name];
-	// 	            if (f == this[name]) {
-	// 	                f = v[name];
-	// 	            }
-	// 	        }
-	// 	        d[name] += 1;
-	// 	        r = f.apply(this, Array.prototype.slice.apply(arguments, [1]));
-	// 	        d[name] -= 1;
-	// 	        //return r;
-	// 	    };
-	// 	    // return this
-	// 	    this.prototype._construct = constr;
-
-	// 		var funcToStr = function(str) {
-	// 			var args = String(str);
-	// 			args = args.substr(0, args.indexOf('\n'));
-	// 			args = args.substr(args.indexOf('(') + 1);
-	// 			args = args.substr(0, args.lastIndexOf(')'));
-				
-	// 			var bod = String(str);
-	// 			bod = bod.replace(/function\s*\(.*\)\s*{(.*)/,'$1');
-	// 			//bod = bod.substr(bod.indexOf('\n') + 1);
-	// 			bod = bod.substr(0, bod.lastIndexOf('}'));
-				
-	// 			return {"args":args, "str":bod};
-	// 		}
-			
-	// 		if(c.name != "Object") {
-	// 			var f1 = funcToStr(c.prototype._construct);
-	// 			var f2 = funcToStr(this.prototype._construct);
-				
-	// 			var h = f2.args || f1.head;
-				
-	// 			//trace(f2.args, f1.str, f2.str);
-	// 			eval('this.prototype._construct = function('+f2.args+') {\n'+f1.str+f2.str+'}');
-	// 		}
-			
-	// 		var old = this.prototype;
-			
-	// 		for(var i in c.prototype) {
-	// 			if(i != "_construct") this.prototype[i] = c.prototype[i];
-	// 		}
-
-	// 		//this.prototype.supe = c;
-	// 		this.prototype.constructor = old.constructor;
-			
-	// 		// if the class has a custom toString method, keep it. Otherwise use this default one.
-	// 		if(String(this.prototype.toString).replace(/^\s*|\s*$/g,'').indexOf("[native code]") >= 0) {
-	// 			this.prototype.toString = function() {
-	// 				// this.constructor.name is not bringing back anything :(
-	// 				return "[Object " + (this.constructor.name || "Object") + "]";
-	// 			}
-	// 		}
-	// 	} catch(e) {
-	// 		console.warn('Function.extend; ' + e);
-	// 	}
-	// }
-	
 	// setup simple namespace
 	var com = {};
 	com.flanvas = {};
@@ -2495,10 +2418,13 @@ try{
 	/**
 	 * URLRequest Class
 	 */
-	function URLRequest(url) {
-		this.url = url;
+	var URLRequest = class extends Object {
+		constructor(url) {
+			super();
+
+			this.url = url;
+		}
 	}
-	URLRequest = class extends Object {}
 	
 	com.flanvas.core.FlanvasSprite = class extends Sprite {}
 	
@@ -2687,15 +2613,20 @@ try{
 	/**
 	 * com.flanvas.media.Sound Class
 	 */
-	com.flanvas.media.Sound = function(stream) {
-		this._context(stream);
+	com.flanvas.media.Sound = class extends com.flanvas.events.EventDispatcher {
+		constructor(stream) {
+			super();
+
+			this._audio = undefined;
+			this._context(stream);
+		}
+
+		_context(stream) {
+			this._audio;
+			
+			if(stream) this._audio = new Audio(stream);
+		}
 	}
-	com.flanvas.media.Sound.prototype._context = function(stream) {
-		this._audio;
-		
-		if(stream) this._audio = new Audio(stream);
-	}
-	com.flanvas.media.Sound = class extends com.flanvas.events.EventDispatcher {}
 	com.flanvas.media.Sound.prototype.load = function(stream) {
 		this._audio = new Audio(stream);
 	}
@@ -2745,9 +2676,9 @@ try{
 	}
 	Svg.parsePoints = function(str) {
 		if(String(str).indexOf(',') == -1) str = String(str).replace(/(\d+[.]\d+|\d+),(\d+[.]\d+|\d+)\D+/g, '$1,$2');
-		arr = str.split(' ');
+		var arr = str.split(' ');
 		var ret = [];
-		for(i in arr) {
+		for(var i in arr) {
 			if(arr[i]) ret.push(arr[i]);
 		}
 		
@@ -2829,7 +2760,7 @@ try{
 	}
 	Svg.prototype.parseXml = function(xml) {
 		// because this function gets called out of scope, it needs it's own try/catch
-		try {
+		// try {
 			var self = this;
 			var control_Points = [];
 			
@@ -3320,7 +3251,7 @@ try{
 						if(node.hasAttribute('fill')) t.textColor = Utils.rgba(node.attributes.getNamedItem('fill').value);
 						if(node.firstChild.data) t.text = node.firstChild.data;
 						
-						for(ti = 0; ti < node.childNodes.length; ++ti) {
+						for(var ti = 0; ti < node.childNodes.length; ++ti) {
 							var tin = node.childNodes[ti];
 							if(tin instanceof SVGTSpanElement) {
 								if(tin.hasAttribute('font-size')) t.size = tin.attributes.getNamedItem('font-size').value;
@@ -3351,10 +3282,10 @@ try{
 					break;
 				}
 			}
-		} catch(e) {
-			// we may be completely out of scope and 'throw' isn't working here so we're console.warning instead
-			throw new Error(e);
-		}
+		// } catch(e) {
+		// 	// we may be completely out of scope and 'throw' isn't working here so we're console.warning instead
+		// 	throw new Error(e);
+		// }
 	}
 	
 	/**
@@ -3515,7 +3446,7 @@ try{
 	 */
 	com.flanvas.events.KeyboardEvent = class extends com.flanvas.events.Event {
 		constructor(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
-			super();
+			super(type, bubbles, cancelable);
 
 			this._charCode = undefined;
 			this._commandKey = false;
@@ -3762,12 +3693,14 @@ try{
 				this.keyUpHandler = function(event) {
 					event.stopPropagation();
 					//event.preventDefault();
-					self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+					event = new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_UP, null, null, event.charCode, event.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey);
+					self.focus.dispatchEvent(event);
 				}
 				this.keyPressHandler = function(event) {
 					event.stopPropagation();
 					//event.preventDefault();
-					self.focus.dispatchEvent(new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, self._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey));
+					event = new com.flanvas.events.KeyboardEvent(com.flanvas.events.KeyboardEvent.KEY_DOWN, null, null, event.charCode, self._lastKeyDownEvent.keyCode, null, event.ctrlKey, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey);
+					self.focus.dispatchEvent(event);
 				}
 
 				document.addEventListener('click', function(event) {
