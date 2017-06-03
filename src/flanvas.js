@@ -1,4 +1,4 @@
- 'use strict'
+'use strict'
 
 /**
  * Copyright (c) 2010 Jackson Rollins <rollins.jackson@gmail.com>
@@ -74,7 +74,10 @@ try{
 	com.flanvas.system = {};
 	com.flanvas.text = {};
 	com.flanvas.ui = {};
-	
+
+	function importFrom(url) {
+		document.write('<script src="'+url+'" type="text/javascript"></script>');
+	}
 	
 	//////////////////////////
 	//// STATIC FUNCTIONS ////
@@ -357,7 +360,7 @@ try{
 			this.height = height;
 		}
 	}
-	
+
 	/**
 	 * com.flanvas.events.EventDispatcher Class
 	 * Have to declare this class out of order because it's the top level custom class :(
@@ -381,11 +384,18 @@ try{
 			if(useCapture === undefined) useCapture = false;
 			if(isNaN(priority)) priority = 0;
 				else if(priority < 0) throw new ArgumentError("parameter priority must be a valid integer");
+
+			window.oncontextmenu = null; // enable right click by default
 			
 			// check for duplicate listeners
 			for(var i = 0; i < this._listeners.length; ++i) {
 				var obj = this._listeners[i];
 				if((obj.type == type) && (obj.listener == listener)) return null;
+
+				if(obj.type == MouseEvent.RIGHT_CLICK
+				|| obj.type == MouseEvent.RIGHT_MOUSE_DOWN
+				|| obj.type == MouseEvent.RIGHT_MOUSE_UP)
+					window.oncontextmenu = function() { return false; } // disable context menu if listening for right click
 			}
 			
 			this._listeners.push({
@@ -3521,14 +3531,16 @@ try{
 		if(_f.stage) {
 			if(Utils.getTimer() > this._last_time + (1000 / (_f.stage.fps + avg * 2))) {
 				//if(_f.traceDiv && _f.clearTraceOnFrame) trace("", true);
-				this.dispatchEvent(new Event(Event.ENTER_FRAME));
-				
-				this._fps = 1000 / (Utils.getTimer() - this._last_time);
-				this._last_time = Utils.getTimer();
-				while(this._fps_throttle.length > 10) this._fps_throttle.pop();
-				
-				// throttling needs more work. it only half helps.
-				this._fps_throttle.unshift(_f.stage.fps - this.fps);
+				if(_f.stage.canvas) { // without this, small errors cause a console mess
+					this.dispatchEvent(new Event(Event.ENTER_FRAME));
+					
+					this._fps = 1000 / (Utils.getTimer() - this._last_time);
+					this._last_time = Utils.getTimer();
+					while(this._fps_throttle.length > 10) this._fps_throttle.pop();
+					
+					// throttling needs more work. it only half helps.
+					this._fps_throttle.unshift(_f.stage.fps - this.fps);
+				}
 			}
 		}
 		
@@ -3592,11 +3604,14 @@ try{
 		}
 	}
 	com.flanvas.events.MouseEvent.CLICK = "click";
-	com.flanvas.events.MouseEvent.MOUSE_DOWN = "mouse_down";
-	com.flanvas.events.MouseEvent.MOUSE_MOVE = "mouse_move";
-	com.flanvas.events.MouseEvent.MOUSE_UP = "mouse_up";
-	com.flanvas.events.MouseEvent.ROLL_OUT = "roll_out";
-	com.flanvas.events.MouseEvent.ROLL_OVER = "roll_over";
+	com.flanvas.events.MouseEvent.MOUSE_DOWN = "mouseDown";
+	com.flanvas.events.MouseEvent.MOUSE_MOVE = "mouseMove";
+	com.flanvas.events.MouseEvent.MOUSE_UP = "mouseUp";
+	com.flanvas.events.MouseEvent.ROLL_OUT = "rollOut";
+	com.flanvas.events.MouseEvent.ROLL_OVER = "rollOver";
+	com.flanvas.events.MouseEvent.RIGHT_CLICK = "rightClick";
+	com.flanvas.events.MouseEvent.RIGHT_MOUSE_DOWN = "rightMouseDown";
+	com.flanvas.events.MouseEvent.RIGHT_MOUSE_UP = "rightMouseUp";
 	var MouseEvent = com.flanvas.events.MouseEvent;
 	
 	/**
@@ -3661,12 +3676,28 @@ try{
 					});
 				} else {
 					// regular mouse listening
+
+					var wbtmet = function(which) { // which button to mouse event type
+						switch(event.which) {
+							case 1:
+								// default
+							break;
+							case 3:
+								return MouseEvent.RIGHT_MOUSE_DOWN;
+							break;
+						}
+
+						return MouseEvent.MOUSE_DOWN;
+					}
+
 					this.canvas.addEventListener('mousedown', function(event) {
 						mousePos(event.pageX, event.pageY);
 						self.focus = self._currentMouseTarget;
-						self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_DOWN));
+						var met = wbtmet(event.which);
+						self._currentMouseTarget.dispatchEvent(new MouseEvent(met));
 					}, false);
 					this.canvas.addEventListener('mousemove', function(event) {
+						event.stopPropagation();
 						mousePos(event.pageX, event.pageY);
 						var t = self.findMouseTarget();
 						self._currentMouseTarget = t;
@@ -3674,8 +3705,13 @@ try{
 					}, false);
 					this.canvas.addEventListener('mouseup', function(event) {
 						mousePos(event.pageX, event.pageY);
-						self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_UP));
+						var met = wbtmet(event.which);
+						self._currentMouseTarget.dispatchEvent(new MouseEvent(met));
 					}, false);
+					this.canvas.addEventListener('contextMenu', function(event) {
+						mousePos(event.pageX, event.pageY);
+						self._currentMouseTarget.dispatchEvent(new MouseEvent(MouseEvent.RIGHT_MOUSE_CLICK));
+					})
 				}
 				
 				/**

@@ -1,3 +1,7 @@
+** DISCONTINUED **
+
+I have decided this morning to discontuinue flanvas. I recently found out that Flash now exports to html5. It's not the most elegant solution but it works. At this point I'm going to start working on paperjs to make it es6 friendly. You can check out the development in my paperjs clone.
+
 Flanvas
 -----
 
